@@ -195,7 +195,7 @@ return {
         vtsls = {},
         cssls = {},
         tailwindcss = {},
-        angularls = {},
+        -- angularls = {}, --[[ Dont want this right now --]]
         jdtls = {},
         rust_analyzer = {},
         gopls = {},
