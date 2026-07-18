@@ -213,9 +213,7 @@ return {
         "goimports",
         "gofumpt",
         "golangci-lint",
-        "markdownlint",
         "google-java-format",
-        "mdformat",
         "npm-groovy-lint",
       })
       require("mason-tool-installer").setup({
