@@ -6,6 +6,9 @@ return {
     opts = {
       library = {
         { path = "${3rd}/luv/library", words = { "vim%.uv" } },
+        -- Load lazy.nvim's annotations (LazySpec, LazyPluginSpec, ...) so the
+        -- `---@type LazySpec` headers on the plugin spec files resolve.
+        { path = "lazy.nvim", words = { "LazySpec" } },
       },
     },
   },
