@@ -3,10 +3,10 @@
 # Installs the editor + toolchain, links the config, and bootstraps plugins.
 set -euo pipefail
 
-# Pinned to the versions this environment was validated against. Neovim must be
-# recent enough for the unpinned nvim-treesitter `main` branch (it relies on the
-# 0.12 `vim.list` API), so a 0.11.x build is intentionally not used here.
-NVIM_VERSION="v0.12.5"
+# Neovim tracks the latest stable release. It must stay recent enough for the
+# unpinned nvim-treesitter `main` branch (it relies on the 0.12 `vim.list` API),
+# so the `stable` channel is used rather than a pinned 0.11.x build.
+NVIM_CHANNEL="stable"
 STYLUA_VERSION="v2.5.2"
 TREE_SITTER_VERSION="v0.27.0"
 
@@ -20,19 +20,26 @@ install_release_binary() {
   curl -fsSL -o "$out" "$url"
 }
 
-log "Neovim ${NVIM_VERSION}"
-if command -v nvim >/dev/null 2>&1 && nvim --version | head -1 | grep -q "NVIM ${NVIM_VERSION}"; then
-  echo "Neovim ${NVIM_VERSION} already present."
-else
-  tmp="$(mktemp -d)"
-  install_release_binary \
-    "https://github.com/neovim/neovim/releases/download/${NVIM_VERSION}/nvim-linux-x86_64.tar.gz" \
-    "${tmp}/nvim.tar.gz"
-  sudo rm -rf /opt/nvim-linux-x86_64
-  sudo tar -C /opt -xzf "${tmp}/nvim.tar.gz"
-  sudo ln -sf /opt/nvim-linux-x86_64/bin/nvim /usr/local/bin/nvim
-  rm -rf "${tmp}"
+log "Neovim (latest ${NVIM_CHANNEL})"
+tmp="$(mktemp -d)"
+install_release_binary \
+  "https://github.com/neovim/neovim/releases/download/${NVIM_CHANNEL}/nvim-linux-x86_64.tar.gz" \
+  "${tmp}/nvim.tar.gz"
+tar -C "${tmp}" -xzf "${tmp}/nvim.tar.gz"
+new_ver="$("${tmp}/nvim-linux-x86_64/bin/nvim" --version | head -1)"
+cur_ver=""
+if command -v nvim >/dev/null 2>&1; then
+  cur_ver="$(nvim --version | head -1)"
 fi
+if [ "${new_ver}" != "${cur_ver}" ]; then
+  echo "Installing ${new_ver} (was: ${cur_ver:-none})"
+  sudo rm -rf /opt/nvim-linux-x86_64
+  sudo mv "${tmp}/nvim-linux-x86_64" /opt/nvim-linux-x86_64
+  sudo ln -sf /opt/nvim-linux-x86_64/bin/nvim /usr/local/bin/nvim
+else
+  echo "${new_ver} already present."
+fi
+rm -rf "${tmp}"
 
 log "stylua ${STYLUA_VERSION}"
 if command -v stylua >/dev/null 2>&1 && stylua --version | grep -q "${STYLUA_VERSION#v}"; then
