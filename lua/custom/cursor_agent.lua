@@ -24,20 +24,36 @@ local function win_valid()
   return state.win ~= nil and vim.api.nvim_win_is_valid(state.win)
 end
 
-local function float_config()
+-- Geometry only (relative/size/position), recomputed from the current editor
+-- dimensions so it stays valid across live resizes.
+local function float_geometry()
   local width = math.floor(vim.o.columns * 0.9)
   local height = math.floor(vim.o.lines * 0.9)
   return {
     relative = "editor",
-    width = width,
-    height = height,
+    width = math.max(width, 1),
+    height = math.max(height, 1),
     col = math.floor((vim.o.columns - width) / 2),
     row = math.floor((vim.o.lines - height) / 2),
-    style = "minimal",
-    border = (vim.o.winborder ~= nil and vim.o.winborder ~= "")
-        and vim.o.winborder
-      or "single",
   }
+end
+
+local function float_config()
+  local config = float_geometry()
+  config.style = "minimal"
+  config.border = (vim.o.winborder ~= nil and vim.o.winborder ~= "")
+      and vim.o.winborder
+    or "single"
+  return config
+end
+
+-- Keep the float centered and sized to the editor when it (or the GUI, e.g.
+-- Neovide) is resized. termopen reflows the terminal contents automatically
+-- once the window geometry changes.
+function M.on_resize()
+  if win_valid() then
+    vim.api.nvim_win_set_config(state.win, float_geometry())
+  end
 end
 
 local function set_buffer_keymaps(buf)
@@ -127,5 +143,13 @@ function M.toggle()
     M.open()
   end
 end
+
+vim.api.nvim_create_autocmd("VimResized", {
+  group = vim.api.nvim_create_augroup("CursorAgentFloat", { clear = true }),
+  desc = "Keep the Cursor Agent float centered on resize",
+  callback = function()
+    M.on_resize()
+  end,
+})
 
 return M
