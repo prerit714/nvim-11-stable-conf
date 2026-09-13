@@ -1,8 +1,9 @@
 -- Reusable lazygit-style floating-terminal launcher for CLI TUIs.
 --
 -- `create` returns an independent launcher: its own terminal buffer/window/job
--- state and its own VimResized autocmd, so multiple TUIs (e.g. cursor-agent and
--- opencode) can each be toggled without clobbering one another. Only
+-- state and its own VimResized autocmd, so multiple TUIs (e.g. cursor-agent,
+-- opencode, codex, and claude) can each be toggled without clobbering one
+-- another. Only
 -- buffer-local maps are set on each terminal, so global keys (macro `q`, etc.)
 -- are never shadowed elsewhere.
 
