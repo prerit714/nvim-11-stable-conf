@@ -3,6 +3,8 @@ return {
     "folke/which-key.nvim",
     event = "VimEnter",
     opts = {
+      -- LazyVim-style right-side floating panel.
+      preset = "helix",
       delay = 0,
       icons = {
         mappings = vim.g.have_nerd_font,
@@ -43,6 +45,7 @@ return {
         { "<leader>t", group = "[T]oggle" },
         { "<leader>g", group = "[G]it" },
         { "<leader>h", group = "Git [H]unk", mode = { "n", "v" } },
+        { "<leader>O", group = "[O]verseer" },
       },
     },
   },
