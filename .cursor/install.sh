@@ -93,6 +93,17 @@ fi
 mise trust "${REPO_DIR}/mise.toml" >/dev/null 2>&1 || true
 (cd "${REPO_DIR}" && mise install)
 
+log "Cursor CLI (cursor-agent)"
+# The <leader>a launcher runs `cursor-agent` in a floating terminal, so the CLI
+# has to be on PATH. The installer drops it in ~/.local/bin (already exported
+# above). Auth is handled interactively by the user; this only ensures the
+# binary exists. Skip the network fetch when it is already installed.
+if command -v cursor-agent >/dev/null 2>&1; then
+  echo "cursor-agent already present ($(command -v cursor-agent))."
+else
+  curl https://cursor.com/install -fsS | bash
+fi
+
 log "Linking ${REPO_DIR} -> ~/.config/nvim"
 mkdir -p "${HOME}/.config"
 if [ "$(readlink -f "${HOME}/.config/nvim" 2>/dev/null || true)" != "${REPO_DIR}" ]; then
