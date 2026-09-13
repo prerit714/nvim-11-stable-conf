@@ -5,27 +5,37 @@
 -- exits. Only buffer-local maps are set on the agent terminal so the global
 -- `q` (macro record) and other keys are never shadowed elsewhere.
 
+---@class CursorAgent
+---@field command string Executable launched inside the float.
 local M = {}
 
 -- Command run inside the float. Overridable if the binary is named differently.
 M.command = "cursor-agent"
 
+---Runtime handles for the single reused agent session.
+---@class CursorAgentState
+---@field buf integer? Terminal buffer handle, or nil when none exists.
+---@field win integer? Float window handle, or nil when hidden/closed.
+---@field job integer? termopen job id, or nil when not running.
 local state = {
   buf = nil,
   win = nil,
   job = nil,
 }
 
+---@return boolean valid True when the terminal buffer handle is live.
 local function buf_valid()
   return state.buf ~= nil and vim.api.nvim_buf_is_valid(state.buf)
 end
 
+---@return boolean valid True when the float window handle is live.
 local function win_valid()
   return state.win ~= nil and vim.api.nvim_win_is_valid(state.win)
 end
 
 -- Geometry only (relative/size/position), recomputed from the current editor
 -- dimensions so it stays valid across live resizes.
+---@return vim.api.keyset.win_config geometry Centered ~90% editor-relative rect.
 local function float_geometry()
   local width = math.floor(vim.o.columns * 0.9)
   local height = math.floor(vim.o.lines * 0.9)
@@ -38,6 +48,8 @@ local function float_geometry()
   }
 end
 
+---Full window config for `nvim_open_win`: geometry plus chrome (style/border).
+---@return vim.api.keyset.win_config config
 local function float_config()
   local config = float_geometry()
   config.style = "minimal"
@@ -50,13 +62,18 @@ end
 -- Keep the float centered and sized to the editor when it (or the GUI, e.g.
 -- Neovide) is resized. termopen reflows the terminal contents automatically
 -- once the window geometry changes.
+---@return nil
 function M.on_resize()
   if win_valid() then
     vim.api.nvim_win_set_config(state.win, float_geometry())
   end
 end
 
+---Register the buffer-local maps on the agent terminal buffer only.
+---@param buf integer Terminal buffer handle to attach the maps to.
+---@return nil
 local function set_buffer_keymaps(buf)
+  ---@type vim.keymap.set.Opts
   local opts = { buffer = buf, silent = true, nowait = true }
 
   -- Normal-mode `q` hides the float (buffer-local only, so global macro `q`
@@ -80,6 +97,8 @@ local function set_buffer_keymaps(buf)
   )
 end
 
+---Close (hide) the float, keeping the terminal session/buffer alive.
+---@return nil
 function M.hide()
   if win_valid() then
     vim.api.nvim_win_close(state.win, true)
@@ -88,15 +107,21 @@ function M.hide()
   -- The agent TUI paints the whole float; force a redraw so no stale cells are
   -- left behind on the window we return to.
   vim.schedule(function()
-    pcall(vim.cmd, "redraw!")
+    pcall(function()
+      vim.cmd("redraw!")
+    end)
   end)
 end
 
+---Open the float over the current (or reused) agent buffer.
+---@return nil
 local function open_window()
   state.win = vim.api.nvim_open_win(state.buf, true, float_config())
   vim.wo[state.win].winfixbuf = true
 end
 
+---Launch (or re-show) the Cursor agent float, starting the CLI if needed.
+---@return nil
 function M.open()
   if vim.fn.executable(M.command) ~= 1 then
     vim.notify(
@@ -120,7 +145,9 @@ function M.open()
   state.buf = vim.api.nvim_create_buf(false, true)
   open_window()
 
+  ---@diagnostic disable-next-line: deprecated
   state.job = vim.fn.termopen(M.command, {
+    ---@return nil
     on_exit = function()
       state.job = nil
       -- Drop the buffer so the next toggle starts a clean session.
@@ -136,6 +163,8 @@ function M.open()
   vim.cmd("startinsert")
 end
 
+---Toggle the float: hide it when visible, otherwise open it.
+---@return nil
 function M.toggle()
   if win_valid() then
     M.hide()
