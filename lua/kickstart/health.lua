@@ -1,3 +1,4 @@
+---@return nil
 local check_version = function()
   local verstr = tostring(vim.version())
   if not vim.version.ge then
@@ -22,6 +23,7 @@ local check_version = function()
   end
 end
 
+---@return boolean
 local check_external_reqs = function()
   for _, exe in ipairs({ "git", "make", "unzip", "rg" }) do
     local is_executable = vim.fn.executable(exe) == 1
@@ -36,6 +38,7 @@ local check_external_reqs = function()
 end
 
 return {
+  ---@return nil
   check = function()
     vim.health.start("kickstart.nvim")
 

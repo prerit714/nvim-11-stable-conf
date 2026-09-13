@@ -1,5 +1,6 @@
 local autoformat = false
 
+---@type LazySpec
 return {
   {
     "stevearc/conform.nvim",

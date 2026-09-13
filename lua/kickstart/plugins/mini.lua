@@ -1,3 +1,4 @@
+---@type LazySpec
 return {
   {
     "echasnovski/mini.nvim",
@@ -44,12 +45,14 @@ return {
       })
 
       -- Redraw the statusline once per second so the UTC clock stays current.
-      local timer = (vim.uv or vim.loop).new_timer()
+      local timer = assert((vim.uv or vim.loop).new_timer())
       timer:start(
         1000,
         1000,
         vim.schedule_wrap(function()
-          pcall(vim.cmd, "redrawstatus")
+          pcall(function()
+            vim.cmd("redrawstatus")
+          end)
         end)
       )
     end,

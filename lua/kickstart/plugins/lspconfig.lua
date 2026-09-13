@@ -1,3 +1,4 @@
+---@type LazySpec
 return {
   {
     "folke/lazydev.nvim",
@@ -89,8 +90,10 @@ return {
           ---@return boolean
           local function client_supports_method(client, method, bufnr)
             if vim.fn.has("nvim-0.11") == 1 then
+              ---@diagnostic disable-next-line: param-type-mismatch
               return client:supports_method(method, bufnr)
             else
+              ---@diagnostic disable-next-line: param-type-mismatch
               return client.supports_method(method, { bufnr = bufnr })
             end
           end
