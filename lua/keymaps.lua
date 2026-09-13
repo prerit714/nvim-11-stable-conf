@@ -58,6 +58,8 @@ vim.keymap.set("i", "kj", "<Esc>", {
   silent = true,
 })
 
+---Toggle soft line wrapping for the current window and notify.
+---@return nil
 local toggle_wrap = function()
   vim.wo.wrap = not vim.wo.wrap
   if vim.wo.wrap then
@@ -76,6 +78,9 @@ vim.keymap.set("n", "<leader>w", toggle_wrap)
 if vim.g.neovide then
   vim.g.neovide_scale_factor = vim.g.neovide_scale_factor or 1.0
 
+  ---Scale the Neovide font size by multiplying the current scale factor.
+  ---@param delta number Multiplier applied to `vim.g.neovide_scale_factor`.
+  ---@return nil
   local function change_scale_factor(delta)
     vim.g.neovide_scale_factor = vim.g.neovide_scale_factor * delta
   end

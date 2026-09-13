@@ -2,6 +2,7 @@
 -- live grep, buffers). Telescope is the fallback for everything fff does not
 -- cover: help tags, keymaps, diagnostics, resume, in-file/open-file search,
 -- LSP pickers (see lspconfig.lua) and `vim.ui.select` (telescope-ui-select).
+---@type LazySpec
 return {
   {
     "nvim-telescope/telescope.nvim",

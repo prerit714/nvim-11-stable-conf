@@ -65,6 +65,7 @@ vim.filetype.add({
   },
 })
 
+---@type table<string, table<string, boolean|integer>>
 local filetype_settings = {
   javascript = {
     expandtab = true,
@@ -124,6 +125,9 @@ local filetype_settings = {
   groovy = { expandtab = true, shiftwidth = 4, tabstop = 4, softtabstop = 4 },
 }
 
+---Apply a table of buffer-local indentation options for the current buffer.
+---@param settings table<string, boolean|integer> Option name -> value pairs.
+---@return nil
 local function set_indent_settings(settings)
   for option, value in pairs(settings) do
     vim.opt_local[option] = value

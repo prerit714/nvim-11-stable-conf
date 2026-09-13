@@ -1,6 +1,7 @@
 -- Task runner / job management. Lives under the free <leader>O prefix so it
 -- never collides with <leader>o (Oil). Overseer's own task-list window keeps
 -- its built-in buffer-local keys (including q), so there are no global clashes.
+---@type LazySpec
 return {
   "stevearc/overseer.nvim",
   cmd = {

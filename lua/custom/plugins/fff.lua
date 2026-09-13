@@ -1,3 +1,4 @@
+---@type LazySpec
 return {
   "dmtrKovalenko/fff.nvim",
   build = function()
@@ -10,9 +11,12 @@ return {
     -- file-type glyphs from mini.icons / nvim-web-devicons when available, so
     -- neutralize its icon provider to render plain filenames only.
     local icons = require("fff.file_picker.icons")
+    -- Intentionally override fff's icon provider with no-op stubs.
+    ---@diagnostic disable-next-line: duplicate-set-field
     icons.get_icon = function()
       return nil, nil
     end
+    ---@diagnostic disable-next-line: duplicate-set-field
     icons.get_directory_icon = function()
       return nil, nil
     end
