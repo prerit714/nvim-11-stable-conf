@@ -1,0 +1,5 @@
+{
+  "name": "nvim-11-stable-conf",
+  "user": "ubuntu",
+  "install": "bash .cursor/install.sh"
+}

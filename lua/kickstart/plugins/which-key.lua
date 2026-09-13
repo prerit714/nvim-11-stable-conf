@@ -1,8 +1,11 @@
+---@type LazySpec
 return {
   {
     "folke/which-key.nvim",
     event = "VimEnter",
     opts = {
+      -- LazyVim-style right-side floating panel.
+      preset = "helix",
       delay = 0,
       icons = {
         mappings = vim.g.have_nerd_font,
@@ -11,10 +14,10 @@ return {
           Down = "<Down> ",
           Left = "<Left> ",
           Right = "<Right> ",
-          C = "<C-…> ",
-          M = "<M-…> ",
-          D = "<D-…> ",
-          S = "<S-…> ",
+          C = "<C-...> ",
+          M = "<M-...> ",
+          D = "<D-...> ",
+          S = "<S-...> ",
           CR = "<CR> ",
           Esc = "<Esc> ",
           ScrollWheelDown = "<ScrollWheelDown> ",
@@ -41,7 +44,9 @@ return {
       spec = {
         { "<leader>s", group = "[S]earch" },
         { "<leader>t", group = "[T]oggle" },
+        { "<leader>g", group = "[G]it" },
         { "<leader>h", group = "Git [H]unk", mode = { "n", "v" } },
+        { "<leader>O", group = "[O]verseer" },
       },
     },
   },

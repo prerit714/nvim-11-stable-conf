@@ -1,3 +1,4 @@
+---@type LazySpec
 return {
   {
     "nvim-treesitter/nvim-treesitter",
@@ -30,7 +31,7 @@ return {
       require("nvim-treesitter").install(parsers)
 
       -- Automatically start treesitter highlighting and indentation for any
-      -- filetype that has an installed parser (including kulala.nvim's http parser).
+      -- filetype that has an installed parser.
       vim.api.nvim_create_autocmd("FileType", {
         callback = function(args)
           local buf, filetype = args.buf, args.match
@@ -53,7 +54,8 @@ return {
             vim.treesitter.query.get(language, "indents") ~= nil
             and filetype ~= "ruby"
           then
-            vim.bo[buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+            vim.bo[buf].indentexpr =
+              "v:lua.require'nvim-treesitter'.indentexpr()"
           end
         end,
       })
