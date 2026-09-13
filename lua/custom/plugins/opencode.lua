@@ -1,5 +1,5 @@
 -- Local (dependency-free) lazy spec that lazy-loads the opencode float on
--- <leader>A, mirroring the cursor-agent launcher on <leader>a.
+-- <leader>2, mirroring the cursor-agent launcher on <leader>a.
 ---@type LazySpec
 return {
   -- Distinct dir from the cursor-agent local spec so lazy.nvim treats this as
@@ -8,7 +8,7 @@ return {
   name = "opencode",
   keys = {
     {
-      "<leader>A",
+      "<leader>2",
       function()
         require("custom.opencode").toggle()
       end,

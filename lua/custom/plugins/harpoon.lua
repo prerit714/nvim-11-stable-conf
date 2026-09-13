@@ -43,15 +43,16 @@ return {
       },
     }
 
-    for i = 1, 5 do
-      table.insert(keys, {
-        "<leader>" .. i,
-        function()
-          require("harpoon"):list():select(i)
-        end,
-        desc = "[Harpoon] Go to buffer" .. i,
-      })
-    end
+    -- NOTE: Since I din't use this much, I am going to remap these
+    -- for i = 1, 5 do
+    --   table.insert(keys, {
+    --     "<leader>" .. i,
+    --     function()
+    --       require("harpoon"):list():select(i)
+    --     end,
+    --     desc = "[Harpoon] Go to buffer" .. i,
+    --   })
+    -- end
     return keys
   end,
 }

@@ -83,10 +83,10 @@ nvim
 | `<leader>w` | Normal | Toggle word wrap |
 | `<leader>q` | Normal | Open diagnostic quickfix |
 | `<leader>d` | Normal | Open diagnostic float |
-| `<leader>a` | Normal | Toggle the Cursor Agent floating TUI (`q` closes it) |
-| `<leader>A` | Normal | Toggle the OpenCode floating TUI (`q` closes it) |
-| `<leader>c` | Normal | Toggle the Codex floating TUI (`q` closes it) |
-| `<leader>C` | Normal | Toggle the Claude floating TUI (`q` closes it) |
+| `<leader>1` | Normal | Toggle the Cursor Agent floating TUI (`q` closes it) |
+| `<leader>2` | Normal | Toggle the OpenCode floating TUI (`q` closes it) |
+| `<leader>3` | Normal | Toggle the Claude floating TUI (`q` closes it) |
+| `<leader>4` | Normal | Toggle the Codex floating TUI (`q` closes it) |
 | `<leader>Ot` | Normal | Overseer: toggle task list |
 | `<leader>Or` | Normal | Overseer: run a task |
 | `<leader>OR` | Normal | Overseer: run a shell command |
