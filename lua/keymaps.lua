@@ -68,3 +68,29 @@ local toggle_wrap = function()
 end
 
 vim.keymap.set("n", "<leader>w", toggle_wrap)
+
+-- Neovide-only: adjust the font size (zoom) at runtime with Ctrl + + / Ctrl + -.
+-- vim.g.neovide is set only when running inside Neovide, so these mappings do
+-- not exist in the terminal or other GUIs. Zoom is done via the scale factor so
+-- it works regardless of which guifont (if any) is configured.
+if vim.g.neovide then
+  vim.g.neovide_scale_factor = vim.g.neovide_scale_factor or 1.0
+
+  local function change_scale_factor(delta)
+    vim.g.neovide_scale_factor = vim.g.neovide_scale_factor * delta
+  end
+
+  local modes = { "n", "i", "v" }
+
+  -- `+` is Shift+`=`, so also bind `<C-=>` for keyboards/layouts where pressing
+  -- Ctrl with the unshifted key is more convenient.
+  for _, lhs in ipairs({ "<C-+>", "<C-=>" }) do
+    vim.keymap.set(modes, lhs, function()
+      change_scale_factor(1.1)
+    end, { desc = "Neovide: increase font size" })
+  end
+
+  vim.keymap.set(modes, "<C-->", function()
+    change_scale_factor(1 / 1.1)
+  end, { desc = "Neovide: decrease font size" })
+end
