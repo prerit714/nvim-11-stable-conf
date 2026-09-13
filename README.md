@@ -64,6 +64,9 @@ nvim
 - **Treesitter:** [nvim-treesitter](https://github.com/nvim-treesitter/nvim-treesitter)
 - **Harpoon:** [harpoon](https://github.com/ThePrimeagen/harpoon) for quick file navigation
 - **Search & Replace:** [grug-far](https://github.com/MagicDuck/grug-far.nvim)
+- **Task Runner:** [overseer.nvim](https://github.com/stevearc/overseer.nvim) under the `<leader>O` prefix
+- **Cursor Agent:** a lazygit-style floating terminal that launches the `cursor-agent` TUI on `<leader>a`
+- **Which-Key:** LazyVim-style `helix` UI (right-side floating panel), kept fully text-based
 - **Markdown Preview:** [render-markdown](https://github.com/MeanderingProgrammer/render-markdown.nvim)
 - **Color Scheme:** Tokyonight (with transparent background support)
 
@@ -80,9 +83,21 @@ nvim
 | `<leader>w` | Normal | Toggle word wrap |
 | `<leader>q` | Normal | Open diagnostic quickfix |
 | `<leader>d` | Normal | Open diagnostic float |
+| `<leader>a` | Normal | Toggle the Cursor Agent floating TUI (`q` closes it) |
+| `<leader>Ot` | Normal | Overseer: toggle task list |
+| `<leader>Or` | Normal | Overseer: run a task |
+| `<leader>OR` | Normal | Overseer: run a shell command |
+| `<leader>Oa` | Normal | Overseer: quick action |
+| `<leader>Oi` | Normal | Overseer: info |
+| `<leader>Ob` | Normal | Overseer: build a task |
+| `<leader>Oc` | Normal | Overseer: clear cache |
 | `<Esc><Esc>` | Terminal | Exit terminal mode |
 
-> Use `<leader>?` or run `:WhichKey` to explore more mappings dynamically.
+> The which-key panel uses the LazyVim-style `helix` preset. Use `<leader>?` or
+> run `:WhichKey` to explore more mappings dynamically.
+
+> `<leader>a` requires the Cursor CLI (`cursor-agent`) on your `PATH`. Install it
+> with `curl https://cursor.com/install -fsS | bash`.
 
 ---
 
