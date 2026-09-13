@@ -5,8 +5,21 @@ return {
   end,
   config = function(_, opts)
     require("fff").setup(opts)
+
+    -- Keep the picker fully text-based: fff has no icon toggle and pulls
+    -- file-type glyphs from mini.icons / nvim-web-devicons when available, so
+    -- neutralize its icon provider to render plain filenames only.
+    local icons = require("fff.file_picker.icons")
+    icons.get_icon = function()
+      return nil, nil
+    end
+    icons.get_directory_icon = function()
+      return nil, nil
+    end
   end,
   opts = {
+    -- Plain-text prompt instead of the default emoji glyph.
+    prompt = "> ",
     layout = {
       height = 0.8,
       width = 0.8,
