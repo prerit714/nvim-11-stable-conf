@@ -1,15 +1,16 @@
 # nvim-11-stable-conf
 
-A personalized, stable Neovim configuration built on top of [kickstart.nvim](https://github.com/nvim-lua/kickstart.nvim), optimized for Neovim 0.11+. It is minimal yet powerful, with sensible defaults, modern LSP integration, and a curated set of plugins for a smooth editing experience.
+A personalized, stable Neovim configuration built on top of [kickstart.nvim](https://github.com/nvim-lua/kickstart.nvim), optimized for the latest stable Neovim. It is minimal yet powerful, with sensible defaults, modern LSP integration, a fully text-based UI (no icons / Nerd Font required), and a curated set of plugins for a smooth editing experience.
 
 ---
 
 ## Requirements
 
-- [Neovim](https://neovim.io/) >= **0.11.0**
+- [Neovim](https://neovim.io/) — **latest stable** (>= **0.12.0**)
 - [Git](https://git-scm.com/)
-- [Nerd Font](https://www.nerdfonts.com/) (for icons and glyphs)
-- A C compiler (for `nvim-treesitter` parsers)
+- A C compiler and the [`tree-sitter` CLI](https://github.com/tree-sitter/tree-sitter) (for `nvim-treesitter` parsers)
+
+> This config is entirely text-based, so a Nerd Font is **not** required.
 
 ---
 
@@ -57,13 +58,12 @@ nvim
 - **LSP:** [nvim-lspconfig](https://github.com/neovim/nvim-lspconfig) + [blink.cmp](https://github.com/Saghen/blink.cmp) for completion
 - **Formatting:** [conform.nvim](https://github.com/stevearc/conform.nvim)
 - **Linting:** [nvim-lint](https://github.com/mfussenegger/nvim-lint)
-- **Git:** [gitsigns.nvim](https://github.com/lewis6991/gitsigns.nvim) + [lazygit](https://github.com/kdheepak/lazygit.nvim)
-- **Fuzzy Finder:** [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim)
+- **Git:** [gitsigns.nvim](https://github.com/lewis6991/gitsigns.nvim) + [lazygit](https://github.com/kdheepak/lazygit.nvim) + [vim-fugitive](https://github.com/tpope/vim-fugitive)
+- **Fuzzy Finder:** [fff.nvim](https://github.com/dmtrKovalenko/fff.nvim) for file/grep operations, with [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim) as the fallback picker
 - **File Tree:** [oil.nvim](https://github.com/stevearc/oil.nvim)
 - **Treesitter:** [nvim-treesitter](https://github.com/nvim-treesitter/nvim-treesitter)
 - **AI Copilot:** [copilot.lua](https://github.com/zbirenbaum/copilot.lua) (disabled by default on startup)
 - **Harpoon:** [harpoon](https://github.com/ThePrimeagen/harpoon) for quick file navigation
-- **API Testing:** [kulala](https://github.com/mistweaverco/kulala.nvim)
 - **Search & Replace:** [grug-far](https://github.com/MagicDuck/grug-far.nvim)
 - **Markdown Preview:** [render-markdown](https://github.com/MeanderingProgrammer/render-markdown.nvim)
 - **Color Scheme:** Tokyonight (with transparent background support)
@@ -102,10 +102,13 @@ This configuration enforces consistent indentation across languages:
 
 ## About the Neovim Version Used
 
+This config targets the **latest stable** Neovim (the Cloud Agent environment
+installs it from the `stable` release channel). It has been validated on:
+
 ```
-NVIM v0.11.6
+NVIM v0.12.5
 Build type: Release
-LuaJIT 2.1.1741730670
+LuaJIT 2.1.1774638290
 ```
 
 ---
