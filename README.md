@@ -62,7 +62,6 @@ nvim
 - **Fuzzy Finder:** [fff.nvim](https://github.com/dmtrKovalenko/fff.nvim) for file/grep operations, with [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim) as the fallback picker
 - **File Tree:** [oil.nvim](https://github.com/stevearc/oil.nvim)
 - **Treesitter:** [nvim-treesitter](https://github.com/nvim-treesitter/nvim-treesitter)
-- **AI Copilot:** [copilot.lua](https://github.com/zbirenbaum/copilot.lua) (disabled by default on startup)
 - **Harpoon:** [harpoon](https://github.com/ThePrimeagen/harpoon) for quick file navigation
 - **Search & Replace:** [grug-far](https://github.com/MagicDuck/grug-far.nvim)
 - **Markdown Preview:** [render-markdown](https://github.com/MeanderingProgrammer/render-markdown.nvim)

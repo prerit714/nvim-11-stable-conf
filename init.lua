@@ -15,10 +15,3 @@ require("options")
 require("keymaps")
 require("lazy-bootstrap")
 require("lazy-plugins")
-
-vim.api.nvim_create_autocmd("VimEnter", {
-  pattern = "*",
-  callback = function()
-    vim.cmd("Copilot disable")
-  end,
-})
