@@ -9,7 +9,7 @@ vim.cmd([[
   highlight FloatBorder guibg=NONE ctermbg=NONE
 ]])
 
-vim.g.have_nerd_font = true
+vim.g.have_nerd_font = false
 vim.o.winborder = "single"
 require("options")
 require("keymaps")

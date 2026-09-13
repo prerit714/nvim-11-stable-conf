@@ -5,7 +5,8 @@ return {
     -- Only render in Normal mode; raw markdown in Insert mode
     render_modes = { "n" },
     heading = {
-      -- Keep heading icons but drop full-width backgrounds
+      -- Text-based headings: no icons, no full-width backgrounds
+      icons = {},
       backgrounds = {},
       sign = false,
     },
