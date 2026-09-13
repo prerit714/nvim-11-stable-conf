@@ -1,3 +1,7 @@
+-- fff.nvim is the primary picker for file-oriented operations (find files,
+-- live grep, buffers). Telescope is the fallback for everything fff does not
+-- cover: help tags, keymaps, diagnostics, resume, in-file/open-file search,
+-- LSP pickers (see lspconfig.lua) and `vim.ui.select` (telescope-ui-select).
 return {
   {
     "nvim-telescope/telescope.nvim",
