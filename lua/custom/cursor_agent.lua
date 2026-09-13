@@ -69,6 +69,11 @@ function M.hide()
     vim.api.nvim_win_close(state.win, true)
   end
   state.win = nil
+  -- The agent TUI paints the whole float; force a redraw so no stale cells are
+  -- left behind on the window we return to.
+  vim.schedule(function()
+    pcall(vim.cmd, "redraw!")
+  end)
 end
 
 local function open_window()
