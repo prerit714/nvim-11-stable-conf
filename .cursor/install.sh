@@ -94,7 +94,7 @@ mise trust "${REPO_DIR}/mise.toml" >/dev/null 2>&1 || true
 (cd "${REPO_DIR}" && mise install)
 
 log "Cursor CLI (cursor-agent)"
-# The <leader>a launcher runs `cursor-agent` in a floating terminal, so the CLI
+# The <leader>1 launcher runs `cursor-agent` in a floating terminal, so the CLI
 # has to be on PATH. The installer drops it in ~/.local/bin (already exported
 # above). Auth is handled interactively by the user; this only ensures the
 # binary exists. Skip the network fetch when it is already installed.

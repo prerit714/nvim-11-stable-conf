@@ -65,7 +65,7 @@ nvim
 - **Harpoon:** [harpoon](https://github.com/ThePrimeagen/harpoon) for quick file navigation
 - **Search & Replace:** [grug-far](https://github.com/MagicDuck/grug-far.nvim)
 - **Task Runner:** [overseer.nvim](https://github.com/stevearc/overseer.nvim) under the `<leader>O` prefix
-- **AI TUIs:** lazygit-style floating terminals for `cursor-agent` (`<leader>a`), `opencode` (`<leader>A`), `codex` (`<leader>c`), and `claude` (`<leader>C`)
+- **AI TUIs:** lazygit-style floating terminals for `cursor-agent` (`<leader>1`), `opencode` (`<leader>2`), `claude` (`<leader>3`), and `codex` (`<leader>4`)
 - **Which-Key:** LazyVim-style `helix` UI (right-side floating panel), kept fully text-based
 - **Markdown Preview:** [render-markdown](https://github.com/MeanderingProgrammer/render-markdown.nvim)
 - **Color Scheme:** Tokyonight (with transparent background support)

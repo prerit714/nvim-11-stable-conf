@@ -1,7 +1,7 @@
 -- Lazygit-style floating terminal for the opencode TUI.
 --
 -- Thin wrapper over the shared float-terminal launcher (see float_term.lua):
--- opens `opencode` in a centered, resize-aware float (bound to <leader>A in
+-- opens `opencode` in a centered, resize-aware float (bound to <leader>2 in
 -- lua/custom/plugins/opencode.lua). Reuses a single terminal buffer across
 -- toggles and auto-closes when the process exits.
 ---@type FloatTerm

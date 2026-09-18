@@ -1,5 +1,5 @@
 -- Local (dependency-free) lazy spec that lazy-loads the Claude float on
--- <leader>3, mirroring the opencode launcher on <leader>A.
+-- <leader>3, mirroring the opencode launcher on <leader>2.
 ---@type LazySpec
 return {
   dir = vim.fn.stdpath("config") .. "/lua/custom/plugins/claude-lazy",

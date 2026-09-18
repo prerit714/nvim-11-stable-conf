@@ -1,5 +1,5 @@
 -- Local (dependency-free) lazy spec that lazy-loads the Codex float on
--- <leader>4, mirroring the cursor-agent launcher on <leader>a.
+-- <leader>4, mirroring the cursor-agent launcher on <leader>1.
 ---@type LazySpec
 return {
   dir = vim.fn.stdpath("config") .. "/lua/custom/plugins/codex-lazy",
