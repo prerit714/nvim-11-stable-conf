@@ -13,7 +13,8 @@ return {
     },
     code = {
       -- Disable code-block backgrounds & language headers entirely
-      style = "none",
+      style = "normal",
+      disable_background = true,
     },
     bullet = { enabled = false },
     pipe_table = { enabled = false },
