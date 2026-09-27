@@ -197,7 +197,14 @@ return {
             },
           },
         },
-        pyright = {},
+        ty = {},
+        ruff = {
+          -- ty owns hover/completion; ruff only contributes lint diagnostics,
+          -- code actions and formatting so its hover does not double up.
+          on_attach = function(client)
+            client.server_capabilities.hoverProvider = false
+          end,
+        },
         vtsls = {},
         cssls = {},
         tailwindcss = {},
@@ -211,9 +218,6 @@ return {
       local ensure_installed = vim.tbl_keys(servers or {})
       vim.list_extend(ensure_installed, {
         "stylua",
-        "isort",
-        "black",
-        "pylint",
         "prettierd",
         "eslint_d",
         "goimports",
@@ -226,21 +230,18 @@ return {
         ensure_installed = ensure_installed,
       })
 
+      -- Register per-server overrides on top of nvim-lspconfig's defaults.
+      -- mason-lspconfig v2 dropped the `handlers` option; it now just calls
+      -- vim.lsp.enable() for every installed server, so config must be
+      -- registered through vim.lsp.config() before that happens.
+      vim.lsp.config("*", { capabilities = capabilities })
+      for server_name, server in pairs(servers) do
+        vim.lsp.config(server_name, server)
+      end
+
       require("mason-lspconfig").setup({
         ensure_installed = {},
         automatic_installation = false,
-        handlers = {
-          function(server_name)
-            local server = servers[server_name] or {}
-            server.capabilities = vim.tbl_deep_extend(
-              "force",
-              {},
-              capabilities,
-              server.capabilities or {}
-            )
-            require("lspconfig")[server_name].setup(server)
-          end,
-        },
       })
     end,
   },

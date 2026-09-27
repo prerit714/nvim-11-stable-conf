@@ -21,9 +21,9 @@ install_release_binary() {
 }
 
 log "System packages (python venv for Mason-installed Python tools)"
-# Mason builds a venv to install the Python formatters/linters (black, isort,
-# pylint). The base image ships Python without ensurepip/venv, so install it
-# idempotently before any Neovim/plugin bootstrap runs.
+# Mason builds a venv to install the ty language server from PyPI (ruff ships
+# as a prebuilt binary). The base image ships Python without ensurepip/venv,
+# so install it idempotently before any Neovim/plugin bootstrap runs.
 if ! python3 -c "import ensurepip" >/dev/null 2>&1; then
   sudo apt-get update -y
   sudo apt-get install -y python3-venv
