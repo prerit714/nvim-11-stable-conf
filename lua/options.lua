@@ -54,6 +54,44 @@ vim.api.nvim_create_autocmd("VimResized", {
   end,
 })
 
+-- 'autoread' is on by default, but Neovim only compares timestamps on a few
+-- events (shell commands, FocusGained, :checktime). Run :checktime more often
+-- so edits made by the AI CLIs in the floating terminals show up promptly.
+local auto_reload_group =
+  vim.api.nvim_create_augroup("AutoReload", { clear = true })
+
+vim.api.nvim_create_autocmd({
+  "FocusGained",
+  "BufEnter",
+  "CursorHold",
+  "CursorHoldI",
+  "TermClose",
+  "TermLeave",
+}, {
+  group = auto_reload_group,
+  pattern = "*",
+  callback = function()
+    -- :checktime is not allowed in the command-line window.
+    if vim.fn.getcmdwintype() ~= "" then
+      return
+    end
+    if vim.bo.buftype ~= "" then
+      return
+    end
+    vim.cmd("checktime")
+  end,
+  desc = "Reload buffers changed outside Neovim",
+})
+
+vim.api.nvim_create_autocmd("FileChangedShellPost", {
+  group = auto_reload_group,
+  pattern = "*",
+  callback = function()
+    vim.notify("File reloaded from disk", vim.log.levels.INFO)
+  end,
+  desc = "Notify when a buffer is reloaded from disk",
+})
+
 vim.keymap.set("n", "<leader>d", vim.diagnostic.open_float, { silent = true })
 
 local indent_group =
