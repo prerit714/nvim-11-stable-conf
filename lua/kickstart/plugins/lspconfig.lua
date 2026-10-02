@@ -141,20 +141,15 @@ return {
             })
           end
 
-          if
-            client
-            and client_supports_method(
-              client,
-              vim.lsp.protocol.Methods.textDocument_inlayHint,
-              event.buf
+          -- Map unconditionally: some servers (e.g. ty, jdtls) register the
+          -- inlayHint capability dynamically after LspAttach, so gating on
+          -- supports_method here would silently drop the keymap. Buffers
+          -- without a supporting client simply show nothing.
+          map("<leader>th", function()
+            vim.lsp.inlay_hint.enable(
+              not vim.lsp.inlay_hint.is_enabled({ bufnr = 0 })
             )
-          then
-            map("<leader>th", function()
-              vim.lsp.inlay_hint.enable(
-                not vim.lsp.inlay_hint.is_enabled({ bufnr = event.buf })
-              )
-            end, "[T]oggle Inlay [H]ints")
-          end
+          end, "[T]oggle Inlay [H]ints")
         end,
       })
 
@@ -187,6 +182,17 @@ return {
 
       local capabilities = require("blink.cmp").get_lsp_capabilities()
 
+      -- Shared by vtsls's typescript and javascript sections; servers only
+      -- send inlay hints for the kinds explicitly enabled here.
+      local ts_inlay_hints = {
+        parameterNames = { enabled = "all" },
+        parameterTypes = { enabled = true },
+        variableTypes = { enabled = true },
+        propertyDeclarationTypes = { enabled = true },
+        functionLikeReturnTypes = { enabled = true },
+        enumMemberValues = { enabled = true },
+      }
+
       local servers = {
         lua_ls = {
           settings = {
@@ -194,6 +200,7 @@ return {
               completion = {
                 callSnippet = "Replace",
               },
+              hint = { enable = true },
             },
           },
         },
@@ -205,13 +212,39 @@ return {
             client.server_capabilities.hoverProvider = false
           end,
         },
-        vtsls = {},
+        vtsls = {
+          settings = {
+            typescript = { inlayHints = ts_inlay_hints },
+            javascript = { inlayHints = ts_inlay_hints },
+          },
+        },
         cssls = {},
         tailwindcss = {},
         -- angularls = {}, --[[ Dont want this right now --]]
-        jdtls = {},
+        jdtls = {
+          settings = {
+            java = {
+              inlayHints = { parameterNames = { enabled = "all" } },
+            },
+          },
+        },
+        -- rust_analyzer and clangd emit inlay hints by default.
         rust_analyzer = {},
-        gopls = {},
+        gopls = {
+          settings = {
+            gopls = {
+              hints = {
+                assignVariableTypes = true,
+                compositeLiteralFields = true,
+                compositeLiteralTypes = true,
+                constantValues = true,
+                functionTypeParameters = true,
+                parameterNames = true,
+                rangeVariableTypes = true,
+              },
+            },
+          },
+        },
         clangd = {},
       }
 
