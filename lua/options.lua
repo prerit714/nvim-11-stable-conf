@@ -46,6 +46,13 @@ vim.cmd([[
 vim.o.wrap = false
 vim.o.colorcolumn = "80"
 
+-- Neovide-only font. "NFM" is the monospaced Nerd Font variant, which keeps
+-- every cell the same width. The config itself stays glyph-free
+-- (have_nerd_font = false).
+if vim.g.neovide then
+  vim.o.guifont = "SauceCodePro NFM:h12"
+end
+
 ---@diagnostic disable-next-line: param-type-mismatch
 vim.api.nvim_create_autocmd("VimResized", {
   pattern = "*",
