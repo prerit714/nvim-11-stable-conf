@@ -376,10 +376,16 @@ Servers start when you open a matching file:
 | Python | `ty` (types), `ruff` (lint/format) |
 | TS/JS | `vtsls` |
 | CSS / Tailwind | `cssls`, `tailwindcss` |
+| JSON / YAML | `jsonls`, `yamlls` with [SchemaStore](https://www.schemastore.org) schemas |
 | Go | `gopls` |
 | Rust | `rust_analyzer` |
 | C/C++ | `clangd` |
 | Java | `jdtls` via nvim-java (loads only for Java files) |
+
+JSON and YAML files are checked against the matching schema from
+schemastore.org: completion, hover docs and errors for `package.json`,
+`tsconfig.json`, GitHub workflows, docker-compose, Kubernetes manifests and
+more. The schema is matched by file name, or by a `"$schema"` key in the file.
 
 Inlay hints are on where the server supports them; toggle them with
 `<leader>th`. Diagnostics show as `E` / `W` / `I` / `H` in the sign column,
@@ -429,6 +435,7 @@ and finished tasks.
 | C / C++ | clangd (LSP) | clangd | 2 spaces |
 | Markdown | mdformat | - | 4 spaces (rendered in normal mode) |
 | HTML | superhtml | - | 2 spaces |
+| JSON / YAML | jsonls / yamlls (LSP) | schema validation | 2 spaces |
 | Groovy | npm-groovy-lint | - | 4 spaces |
 | Make | - | - | tabs (no expand) |
 

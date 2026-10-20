@@ -25,6 +25,9 @@ return {
       { "j-hui/fidget.nvim", opts = {} },
 
       "saghen/blink.cmp",
+
+      -- JSON/YAML schema catalogue (schemastore.org) for jsonls and yamlls.
+      "b0o/SchemaStore.nvim",
     },
     config = function()
       vim.api.nvim_create_autocmd("LspAttach", {
@@ -222,6 +225,27 @@ return {
           },
         },
         cssls = {},
+        -- Schemas are matched by filename (package.json, tsconfig.json,
+        -- .github/workflows/*.yml, docker-compose.yml, ...) or by a
+        -- "$schema" key in the file.
+        jsonls = {
+          settings = {
+            json = {
+              schemas = require("schemastore").json.schemas(),
+              validate = { enable = true },
+            },
+          },
+        },
+        yamlls = {
+          settings = {
+            yaml = {
+              -- Use SchemaStore.nvim's catalogue in place of yamlls' own
+              -- fetch, so both servers share the same schema list.
+              schemaStore = { enable = false, url = "" },
+              schemas = require("schemastore").yaml.schemas(),
+            },
+          },
+        },
         tailwindcss = {},
         -- angularls = {}, --[[ Dont want this right now --]]
         jdtls = {
@@ -265,6 +289,12 @@ return {
       require("mason-tool-installer").setup({
         ensure_installed = ensure_installed,
       })
+      -- mason-tool-installer only checks for missing tools on VimEnter, which
+      -- has already fired by the time this lazy-loaded spec runs (on the first
+      -- BufReadPre), so start the install check explicitly.
+      if vim.v.vim_did_enter == 1 then
+        require("mason-tool-installer").run_on_start()
+      end
 
       -- Register per-server overrides on top of nvim-lspconfig's defaults.
       -- mason-lspconfig v2 dropped the `handlers` option; it now just calls

@@ -26,6 +26,8 @@ return {
         "gomod",
         "gowork",
         "toml",
+        "json",
+        "yaml",
         "java",
       }
       require("nvim-treesitter").install(parsers)
