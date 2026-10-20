@@ -26,6 +26,7 @@ without leaving the editor.
    - [Everyday git](#4-everyday-git)
    - [Code intelligence (LSP)](#5-code-intelligence-lsp)
    - [Tasks and builds](#6-tasks-and-builds)
+   - [Timebox yourself](#7-timebox-yourself)
 5. [What you see on screen](#what-you-see-on-screen)
 6. [Languages and tooling](#languages-and-tooling)
 7. [Editor behaviour](#editor-behaviour)
@@ -225,6 +226,19 @@ is hidden. Inside a float:
 | `<leader>Oi` | Overseer info |
 | `<leader>Oc` | Clear the task cache |
 
+### Timebox `<leader>T`
+
+| Key | Action |
+|---|---|
+| `<leader>Ts` | Start a timer (asks for minutes, then a label) |
+| `<leader>T5` / `<leader>T1` / `<leader>T2` | Start a 5 / 15 / 25 minute timer |
+| `<leader>Tl` | List running timers |
+| `<leader>Tc` | Cancel a timer (picker) |
+
+Or use the command: `:Timebox 25 Write tests`, `:Timebox list`,
+`:Timebox cancel`, `:Timebox cancel all`. Decimals work, e.g. `0.5`
+for 30 seconds.
+
 ### Neovide only
 
 | Key | Action |
@@ -397,6 +411,19 @@ with virtual text.
 on). `<leader>OR` runs any shell command, and `<leader>Ot` shows the running
 and finished tasks.
 
+### 7. Timebox yourself
+
+```mermaid
+flowchart LR
+    S["Space T2 or :Timebox 25 Write tests"] --> R["countdown in the statusline<br/>T 24:59 Write tests"]
+    R -->|time is up| A["bell + warning notification"]
+    R -->|"Space Tc"| C[cancel]
+```
+
+You can run several timers at once. The statusline shows the one closest to
+finishing, plus `+N` for the others. The timer code is not even loaded until
+you start your first timer.
+
 ---
 
 ## What you see on screen
@@ -409,9 +436,9 @@ and finished tasks.
 | ~ 14|   x = x + 1      |               indent guides (ibl), 80-col ruler       |
 |E  15|   foo(           <- error: ...   diagnostics: sign + virtual text        |
 +--------------------------------------------------------------------------------+
-| NORMAL | main +1 ~2 E1 lua_ls | lua/init.lua | utf-8 lua | 15:3  14:09:45 IST   |
+| NORMAL | main +1 ~2 E1 lua_ls | init.lua | utf-8 lua | 15:3 T 12:04 Tests 14:09:45 IST |
 +--------------------------------------------------------------------------------+
-   mode    git / diff / diagnostics / LSP       file           position  clock (IST)
+   mode    git / diff / diagnostics / LSP     file          position  timebox   clock (IST)
 ```
 
 - **Colour scheme:** gruvbox with a transparent background, so the terminal
@@ -481,6 +508,7 @@ lua/
     cursor_agent.lua, opencode.lua
     git_changes/            the <leader>gc reviewer (async git, picker, view)
     git_conflict.lua        conflict highlighting and resolution
+    timebox.lua             countdown timers (:Timebox, <leader>T, statusline)
 ```
 
 **To add a plugin:** drop a file returning a `LazySpec` into

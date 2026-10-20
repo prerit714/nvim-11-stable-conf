@@ -73,6 +73,12 @@ Nothing blocks the UI: all git work is async.
 
 `diffopt` adds `vertical` and `algorithm:histogram` (in `options.lua`).
 
+### Timebox
+
+`lua/custom/timebox.lua` holds the logic and `lua/custom/plugins/timebox.lua` is a local lazy spec (dir `timebox-lazy/`). Together they provide `:Timebox {minutes} [label] | list | cancel [all]` and the `<leader>T` keys.
+- Timers are one-shot `vim.uv` timers that are closed on finish, on cancel and on `VimLeavePre`. A finished timer shows a WARN notification and rings the terminal bell.
+- `mini.lua` calls `timebox.statusline()` only when `package.loaded["custom.timebox"]` is set, so the module never loads at startup.
+
 ### Startup / lazy-loading
 
 Keep the startup path light: nvim-lspconfig (and with it mason, fidget, blink.cmp) loads on `BufReadPre`/`BufNewFile`, nvim-java on `ft = "java"` (jdtls is excluded from mason-lspconfig's `automatic_enable` so nvim-java enables it after its setup), and telescope/which-key on `VeryLazy`. Plugin keymaps belong in lazy `keys` specs, not in `config`, so they work before the plugin loads.
