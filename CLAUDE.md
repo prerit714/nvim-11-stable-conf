@@ -53,7 +53,12 @@ Nothing blocks the UI: all git work is async.
 
 - `lua/custom/git_changes/git.lua` — coroutine-based helpers. `git.run`/`git.run_all` only work inside `git.async(fn)`: they yield until the `vim.system` process(es) exit and resume via `vim.schedule`, so code after them is on the main loop. Commands run with `cwd` = repo root (paths are root-relative). `git.root()` uses `vim.fs.root` and spawns no process.
 - `lua/custom/git_changes/picker.lua` — `open` must run inside `git.async`. It fetches changes, then builds the Telescope picker in a fresh `vim.schedule` tick, because Telescope runs its own plenary.async coroutines. Previews are async and cached per path. Keys: `<CR>` side-by-side diff, `<C-e>` edit file, `<C-s>` stage/unstage toggle.
-- `lua/custom/git_changes/view.lua` — a single reused diff tabpage: left is a read-only `gitchanges://<base>/<path>` scratch buffer, filled asynchronously; right is the real file (native diff mode, so `]c`/`[c`/`do`/`dp` work). A generation counter drops stale `git show` results. Buffer-local `]f`/`[f`/`q` are removed from real file buffers when the view moves on or closes.
+- `lua/custom/git_changes/view.lua` — a single reused diff tabpage with two layouts, toggled by buffer-local `<leader>gt` (the choice persists):
+  - **inline** (default): the real file in one window. Hunks come from `vim.text.diff(..., { result_type = "indices" })`; added/changed lines get `DiffAdd` line highlights and removed lines are `DiffDelete` `virt_lines`. They are redrawn (debounced) on `TextChanged`/`WinResized`, and `]c`/`[c` jump between these hunks.
+  - **split**: a read-only `gitchanges://<base>/<path>` scratch buffer on the left plus native diff mode.
+  - The base text arrives asynchronously, and a generation counter drops stale results.
+  - Files are shown with `bufadd` + `nvim_win_set_buf` (never `:edit`, which would prompt on unsaved changes).
+  - Buffer-local view maps (`]f`/`[f`/`q`/`<leader>gt`, inline `]c`/`[c`) save any buffer-local map they shadow (e.g. gitsigns' `]c`) and restore it with `mapset` when the view moves on or closes.
 - `lua/custom/plugins/git-changes.lua` — local lazy spec (dir `git-changes-lazy/`, per the gotcha above) binding the keys and defining `:GitChanges`. Ref completion is served from an async-refreshed cache.
 
 ### Startup / lazy-loading
