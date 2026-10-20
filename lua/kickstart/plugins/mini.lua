@@ -7,6 +7,40 @@ return {
 
       require("mini.surround").setup()
 
+      -- Start screen (auto-opens on `nvim` / Neovide with no file args).
+      -- Pinned project dirs come first; see lua/custom/pinned_dirs.lua.
+      local starter = require("mini.starter")
+      local pinned_dirs = require("custom.pinned_dirs")
+      starter.setup({
+        header = function()
+          return "Neovim\n" .. vim.fn.fnamemodify(vim.fn.getcwd(), ":~")
+        end,
+        items = {
+          pinned_dirs.starter_items(),
+          starter.sections.recent_files(8, false, true),
+          {
+            section = "Actions",
+            name = "Find file",
+            action = function()
+              require("fff").find_files()
+            end,
+          },
+          { section = "Actions", name = "Oil (cwd)", action = "Oil" },
+          {
+            section = "Actions",
+            name = "Pin/unpin project",
+            action = pinned_dirs.toggle,
+          },
+          starter.sections.builtin_actions(),
+        },
+        footer = "<leader>pp pin/unpin   <leader>pl pinned dirs   "
+          .. "<leader>ps start screen",
+        content_hooks = {
+          starter.gen_hook.adding_bullet("- "),
+          starter.gen_hook.aligning("center", "center"),
+        },
+      })
+
       local statusline = require("mini.statusline")
 
       statusline.setup({

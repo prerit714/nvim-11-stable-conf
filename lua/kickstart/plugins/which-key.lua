@@ -50,6 +50,7 @@ return {
         { "<leader>T", group = "[T]imebox" },
         { "<leader>b", group = "[B]uffer" },
         { "<leader>l", group = "[L]azygit" },
+        { "<leader>p", group = "[P]inned dirs" },
         { "s", group = "[S]urround (mini.surround)", mode = { "n", "x" } },
       },
     },
