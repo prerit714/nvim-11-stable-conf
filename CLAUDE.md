@@ -39,7 +39,7 @@ Load order from `init.lua`: sets leader to space and transparent highlights, the
 
 Four CLIs (`cursor-agent`, `opencode`, `claude`, `codex`) open in lazygit-style floats on `<leader>1`–`<leader>4`. This spans three layers:
 
-1. `lua/custom/float_term.lua` — the shared launcher. `create({ command, name })` returns an independent `{ open, hide, toggle, on_resize }` object with its own buffer/window/job state and its own `VimResized` augroup. It reuses the terminal buffer across toggles, deletes it when the process exits, and sets only buffer-local maps (`q` in normal mode hides; `<Esc><Esc>` leaves terminal mode).
+1. `lua/custom/float_term.lua` — the shared launcher. `create({ command, name })` returns an independent `{ open, hide, toggle, on_resize }` object with its own buffer/window/job state and its own `VimResized` augroup. It reuses the terminal buffer across toggles while the cwd is unchanged. If the cwd has moved (e.g. a pinned-dir switch), it kills the old session and restarts the CLI in the new cwd. A replaced session's late `on_exit` is ignored, because it checks that `state.buf` is still its own buffer. It deletes the buffer when the process exits, and sets only buffer-local maps (`q` in normal mode hides; `<Esc><Esc>` leaves terminal mode).
 2. `lua/custom/<tool>.lua` — a one-line wrapper calling `float_term.create` for that CLI.
 3. `lua/custom/plugins/<tool>.lua` — a dependency-free local lazy spec that binds the key and lazy-loads the wrapper.
 

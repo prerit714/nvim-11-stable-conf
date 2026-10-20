@@ -450,8 +450,9 @@ screen. Press it again to unpin. Pins live in
 Neovim was launched. Picking a pinned dir, or entering a file that lives inside
 one, makes it the global cwd. fff, harpoon and telescope follow along. Files
 outside every pinned dir leave the cwd alone, and so do windows with an
-`:lcd`/`:tcd`. AI terminals that are already running keep the directory they
-started in.
+`:lcd`/`:tcd`. AI terminals (`<leader>1`-`4`) follow too: if the cwd changed
+since a terminal started, toggling it restarts the CLI in the new folder (the
+old session is closed).
 
 ---
 

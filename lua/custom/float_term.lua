@@ -14,6 +14,7 @@ local M = {}
 ---@field buf integer? Terminal buffer handle, or nil when none exists.
 ---@field win integer? Float window handle, or nil when hidden/closed.
 ---@field job integer? termopen job id, or nil when not running.
+---@field cwd string? Directory the job was started in.
 
 ---A floating-terminal launcher for one CLI command.
 ---@class FloatTerm
@@ -150,22 +151,54 @@ function M.create(opts)
       return
     end
 
+    local cwd = vim.fn.getcwd()
+
     if buf_valid() then
-      -- Reuse the existing terminal buffer/session.
-      open_window()
-      vim.cmd("startinsert")
-      return
+      if state.cwd == cwd then
+        -- Reuse the existing terminal buffer/session.
+        open_window()
+        vim.cmd("startinsert")
+        return
+      end
+
+      -- The cwd moved (e.g. a pinned-dir switch): a running CLI can't follow,
+      -- so drop the old session and start a fresh one in the new cwd.
+      -- Deleting the terminal buffer stops its job.
+      term.hide()
+      local old = state.buf
+      state.buf, state.job, state.cwd = nil, nil, nil
+      vim.api.nvim_buf_delete(old, { force = true })
+      vim.notify(
+        string.format(
+          "float_term: restarting %s in %s",
+          term.command,
+          vim.fn.fnamemodify(cwd, ":~")
+        ),
+        vim.log.levels.INFO
+      )
     end
 
     -- Fresh terminal buffer running the command.
-    state.buf = vim.api.nvim_create_buf(false, true)
+    local buf = vim.api.nvim_create_buf(false, true)
+    state.buf = buf
+    state.cwd = cwd
     open_window()
 
     ---@diagnostic disable-next-line: deprecated
     state.job = vim.fn.termopen(term.command, {
+      cwd = cwd,
       ---@return nil
       on_exit = function()
+        -- A replaced session exits after its successor started; leave the
+        -- new session's state alone.
+        if state.buf ~= buf then
+          if vim.api.nvim_buf_is_valid(buf) then
+            vim.api.nvim_buf_delete(buf, { force = true })
+          end
+          return
+        end
         state.job = nil
+        state.cwd = nil
         -- Drop the buffer so the next toggle starts a clean session.
         if buf_valid() then
           vim.api.nvim_buf_delete(state.buf, { force = true })
@@ -175,7 +208,7 @@ function M.create(opts)
       end,
     })
 
-    set_buffer_keymaps(state.buf)
+    set_buffer_keymaps(buf)
     vim.cmd("startinsert")
   end
 
