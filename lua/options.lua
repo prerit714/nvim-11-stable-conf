@@ -99,7 +99,12 @@ vim.api.nvim_create_autocmd("FileChangedShellPost", {
   desc = "Notify when a buffer is reloaded from disk",
 })
 
-vim.keymap.set("n", "<leader>d", vim.diagnostic.open_float, { silent = true })
+vim.keymap.set(
+  "n",
+  "<leader>d",
+  vim.diagnostic.open_float,
+  { silent = true, desc = "Show line [D]iagnostics" }
+)
 
 local indent_group =
   vim.api.nvim_create_augroup("FileTypeIndent", { clear = true })

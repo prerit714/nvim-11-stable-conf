@@ -1,4 +1,9 @@
-vim.keymap.set("n", "<Esc>", "<cmd>nohlsearch<CR>")
+vim.keymap.set(
+  "n",
+  "<Esc>",
+  "<cmd>nohlsearch<CR>",
+  { desc = "Clear search highlight" }
+)
 
 vim.keymap.set(
   "n",
@@ -52,10 +57,12 @@ vim.api.nvim_create_autocmd("TextYankPost", {
 
 vim.keymap.set("i", "jk", "<Esc>", {
   silent = true,
+  desc = "Exit insert mode",
 })
 
 vim.keymap.set("i", "kj", "<Esc>", {
   silent = true,
+  desc = "Exit insert mode",
 })
 
 ---Toggle soft line wrapping for the current window and notify.
