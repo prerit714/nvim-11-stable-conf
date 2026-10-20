@@ -53,13 +53,25 @@ Nothing blocks the UI: all git work is async.
 
 - `lua/custom/git_changes/git.lua` — coroutine-based helpers. `git.run`/`git.run_all` only work inside `git.async(fn)`: they yield until the `vim.system` process(es) exit and resume via `vim.schedule`, so code after them is on the main loop. Commands run with `cwd` = repo root (paths are root-relative). `git.root()` uses `vim.fs.root` and spawns no process.
 - `lua/custom/git_changes/picker.lua` — `open` must run inside `git.async`. It fetches changes, then builds the Telescope picker in a fresh `vim.schedule` tick, because Telescope runs its own plenary.async coroutines. Previews are async and cached per path. Keys: `<CR>` side-by-side diff, `<C-e>` edit file, `<C-s>` stage/unstage toggle.
-- `lua/custom/git_changes/view.lua` — a single reused diff tabpage with two layouts, toggled by buffer-local `<leader>gt` (the choice persists):
+- `lua/custom/git_changes/view.lua` — a single reused diff tabpage with two layouts, toggled by buffer-local `<leader>gv` (the choice persists):
   - **inline** (default): the real file in one window. Hunks come from `vim.text.diff(..., { result_type = "indices" })`; added/changed lines get `DiffAdd` line highlights and removed lines are `DiffDelete` `virt_lines`. They are redrawn (debounced) on `TextChanged`/`WinResized`, and `]c`/`[c` jump between these hunks.
   - **split**: a read-only `gitchanges://<base>/<path>` scratch buffer on the left plus native diff mode.
   - The base text arrives asynchronously, and a generation counter drops stale results.
   - Files are shown with `bufadd` + `nvim_win_set_buf` (never `:edit`, which would prompt on unsaved changes).
-  - Buffer-local view maps (`]f`/`[f`/`q`/`<leader>gt`, inline `]c`/`[c`) save any buffer-local map they shadow (e.g. gitsigns' `]c`) and restore it with `mapset` when the view moves on or closes.
+  - Buffer-local view maps (`]f`/`[f`/`q`/`<leader>gv`, inline `]c`/`[c`) save any buffer-local map they shadow (e.g. gitsigns' `]c`) and restore it with `mapset` when the view moves on or closes.
 - `lua/custom/plugins/git-changes.lua` — local lazy spec (dir `git-changes-lazy/`, per the gotcha above) binding the keys and defining `:GitChanges`. Ref completion is served from an async-refreshed cache.
+
+### Merge conflicts
+
+`lua/custom/plugins/fugitive.lua` holds the conflict keys; `lua/custom/git_conflict.lua` holds the logic. The fugitive spec's `init` calls `git_conflict.setup()` at startup, which installs autocmds that highlight conflict markers inline: ours `DiffAdd`, diff3 base `DiffDelete`, theirs `DiffChange`, with key hints on the marker lines.
+
+- `<leader>gq`: `:Git mergetool` (all conflicts into quickfix).
+- `<leader>gm`: `:Gvdiffsplit!` (ours `//2` | working copy | theirs `//3`).
+- `]x` / `[x`: jump between conflicts.
+- `<leader>go` / `gt` / `ga` / `gx`: take ours / theirs / both / none for the block under the cursor. This is marker-based, so it works in plain buffers and in the 3-way middle window. In a diff window with no marker under the cursor, it falls back to `:diffget //2` / `//3`.
+- `<leader>gw`: `:Gwrite` (stage the file, i.e. mark it resolved).
+
+`diffopt` adds `vertical` and `algorithm:histogram` (in `options.lua`).
 
 ### Startup / lazy-loading
 

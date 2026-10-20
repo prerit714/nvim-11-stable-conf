@@ -1,6 +1,6 @@
 -- Diff tabpage for stepping through a list of changed files.
 --
--- Two layouts, toggled with <leader>gt (the choice persists across opens):
+-- Two layouts, toggled with <leader>gv (the choice persists across opens):
 --   inline (default): one window with the real working-tree file. Added and
 --     changed lines are highlighted and removed lines are drawn above them
 --     as virtual lines, recomputed as you edit.
@@ -128,7 +128,7 @@ local function map_view_keys(buf)
     M.step(-1)
   end, "Git changes: previous file")
   map(buf, "q", M.close, "Git changes: close diff tab")
-  map(buf, "<leader>gt", M.toggle_layout, "Git changes: toggle inline/split")
+  map(buf, "<leader>gv", M.toggle_layout, "Git changes: toggle inline/split")
   if layout == "inline" then
     map(buf, "]c", function()
       M.hunk(1)
@@ -187,14 +187,14 @@ local function set_winbars(s, entry)
   if layout == "inline" then
     vim.wo[s.win].winbar = (
       "%%#DiffAdd# %s -> %s %%* %s  %s"
-      .. "  %%#Comment#]f/[f files  ]c/[c hunks  <leader>gt split"
+      .. "  %%#Comment#]f/[f files  ]c/[c hunks  <leader>gv split"
       .. "  q close%%*"
     ):format(escape_stl(s.label), side, path, pos)
     return
   end
   vim.wo[s.win].winbar = (
     "%%#DiffAdd# %s %%* %s  %s"
-    .. "  %%#Comment#]f/[f files  ]c/[c hunks  <leader>gt inline"
+    .. "  %%#Comment#]f/[f files  ]c/[c hunks  <leader>gv inline"
     .. "  q close%%*"
   ):format(side, path, pos)
   if left_valid() then

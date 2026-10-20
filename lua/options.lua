@@ -24,6 +24,10 @@ vim.o.timeoutlen = 300
 vim.o.splitright = true
 vim.o.splitbelow = true
 
+-- Side-by-side diffs (fugitive :Gdiffsplit, merge splits) with the histogram
+-- algorithm, which aligns moved/reordered code better than the default.
+vim.opt.diffopt:append({ "vertical", "algorithm:histogram" })
+
 vim.o.list = true
 vim.opt.listchars = { tab = "> ", trail = "-", nbsp = "+" }
 
