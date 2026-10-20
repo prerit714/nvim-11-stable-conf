@@ -1,140 +1,501 @@
 # nvim-11-stable-conf
 
-A personalized, stable Neovim configuration built on top of [kickstart.nvim](https://github.com/nvim-lua/kickstart.nvim), optimized for the latest stable Neovim. It is minimal yet powerful, with sensible defaults, modern LSP integration, a fully text-based UI (no icons / Nerd Font required), and a curated set of plugins for a smooth editing experience.
+A personal, **text-only** Neovim config built on
+[kickstart.nvim](https://github.com/nvim-lua/kickstart.nvim) for the latest
+stable Neovim (**>= 0.12**). It is built around one workflow: let AI agents
+edit code in floating terminals, then **review, fix and merge** their changes
+without leaving the editor.
+
+- No Nerd Font, no icons: everything renders as plain text.
+- Starts in about 85 ms. Heavy plugins load only when you open a file or
+  press their key.
+- Space is `<leader>`. Press it and wait: which-key shows every
+  binding in a side panel.
 
 ---
 
-## Requirements
+## Contents
 
-- [Neovim](https://neovim.io/) — **latest stable** (>= **0.12.0**)
-- [Git](https://git-scm.com/)
-- A C compiler and the [`tree-sitter` CLI](https://github.com/tree-sitter/tree-sitter) (for `nvim-treesitter` parsers)
-
-> This config is entirely text-based, so a Nerd Font is **not** required.
+1. [Install](#install)
+2. [The 30-second tour](#the-30-second-tour)
+3. [Keymap cheat sheet](#keymap-cheat-sheet)
+4. [Workflows](#workflows)
+   - [Run an AI agent and review its changes](#1-run-an-ai-agent-and-review-its-changes)
+   - [Resolve merge conflicts](#2-resolve-merge-conflicts)
+   - [Find files, grep and replace](#3-find-files-grep-and-replace)
+   - [Everyday git](#4-everyday-git)
+   - [Code intelligence (LSP)](#5-code-intelligence-lsp)
+   - [Tasks and builds](#6-tasks-and-builds)
+5. [What you see on screen](#what-you-see-on-screen)
+6. [Languages and tooling](#languages-and-tooling)
+7. [Editor behaviour](#editor-behaviour)
+8. [Layout of this repo](#layout-of-this-repo)
+9. [Maintenance commands](#maintenance-commands)
 
 ---
 
-## Installation
+## Install
 
-### Linux / macOS
+**Requirements:**
+- [Neovim](https://neovim.io/) >= 0.12
+- git
+- a C compiler and the
+  [`tree-sitter` CLI](https://github.com/tree-sitter/tree-sitter) (for parsers)
+
+**Optional CLIs:**
+- `lazygit`
+- the AI TUIs: `cursor-agent`, `opencode`, `claude`, `codex`
 
 ```bash
+# Linux / macOS
 git clone git@github.com:prerit714/nvim-11-stable-conf.git ~/.config/nvim
+
+# Windows (PowerShell)
+git clone git@github.com:prerit714/nvim-11-stable-conf.git $env:LOCALAPPDATA\nvim
 ```
 
-Then start Neovim:
-
-```bash
-nvim
-```
-
-`lazy.nvim` will automatically bootstrap itself and install all plugins on the first run.
+Start `nvim`: lazy.nvim installs itself and every plugin. Mason then
+installs the language servers, formatters and linters in the background.
 
 ---
 
-## Structure
+## The 30-second tour
 
 ```
-~/.config/nvim/
-├── init.lua                 # Entry point
-├── lua/
-│   ├── options.lua          # Vim options, indentation rules, transparency
-│   ├── keymaps.lua          # Custom keymaps
-│   ├── lazy-bootstrap.lua   # Plugin manager bootstrap
-│   ├── lazy-plugins.lua     # Plugin definitions
-│   ├── kickstart/
-│   │   └── plugins/         # Core plugins (LSP, Treesitter, etc.)
-│   └── custom/
-│       └── plugins/         # User-defined plugins
-├── doc/                     # Documentation
-└── lazy-lock.json           # Plugin lockfile
+ <Space>            which-key panel: every binding, grouped
+ <Space><Space>     switch buffer          <Space>sf  find file
+ <Space>sg          live grep              <Space>o   file explorer (oil)
+ <Space>3           Claude in a float      <Space>gc  review uncommitted changes
+ <Space>gq          list merge conflicts   <Space>lg  lazygit
+ jk / kj            leave insert mode      <Esc>      clear search highlight
+```
+
+```mermaid
+flowchart LR
+    A["Space 1-4<br/>AI agent edits code"] --> B["Space gc<br/>pick a changed file"]
+    B --> C["inline diff<br/>]c / [c hunks, ]f / [f files"]
+    C -->|fix by hand| C
+    C --> D["Space gs / Space lg<br/>stage and commit"]
 ```
 
 ---
 
-## Key Features
+## Keymap cheat sheet
 
-- **Plugin Manager:** [lazy.nvim](https://github.com/folke/lazy.nvim) — fast, modern, and lockfile-friendly
-- **LSP:** [nvim-lspconfig](https://github.com/neovim/nvim-lspconfig) + [blink.cmp](https://github.com/Saghen/blink.cmp) for completion
-- **Formatting:** [conform.nvim](https://github.com/stevearc/conform.nvim)
-- **Linting:** [nvim-lint](https://github.com/mfussenegger/nvim-lint)
-- **Git:** [gitsigns.nvim](https://github.com/lewis6991/gitsigns.nvim) + [lazygit](https://github.com/kdheepak/lazygit.nvim) + [vim-fugitive](https://github.com/tpope/vim-fugitive)
-- **Fuzzy Finder:** [fff.nvim](https://github.com/dmtrKovalenko/fff.nvim) for file/grep operations, with [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim) as the fallback picker
-- **File Tree:** [oil.nvim](https://github.com/stevearc/oil.nvim)
-- **Treesitter:** [nvim-treesitter](https://github.com/nvim-treesitter/nvim-treesitter)
-- **Harpoon:** [harpoon](https://github.com/ThePrimeagen/harpoon) for quick file navigation
-- **Search & Replace:** [grug-far](https://github.com/MagicDuck/grug-far.nvim)
-- **Task Runner:** [overseer.nvim](https://github.com/stevearc/overseer.nvim) under the `<leader>O` prefix
-- **AI TUIs:** lazygit-style floating terminals for `cursor-agent` (`<leader>1`), `opencode` (`<leader>2`), `claude` (`<leader>3`), and `codex` (`<leader>4`)
-- **Which-Key:** LazyVim-style `helix` UI (right-side floating panel), kept fully text-based
-- **Markdown Preview:** [render-markdown](https://github.com/MeanderingProgrammer/render-markdown.nvim)
-- **Color Scheme:** Tokyonight (with transparent background support)
+`<leader>` = **Space**. Groups match the which-key panel.
 
----
-
-## Key Mappings
+### Core
 
 | Key | Mode | Action |
-|-----|------|--------|
-| `<leader>` | Normal | Space |
-| `jk` / `kj` | Insert | Exit insert mode |
-| `<Esc>` | Normal | Clear search highlight |
-| `<C-h/j/k/l>` | Normal | Navigate splits |
-| `<leader>w` | Normal | Toggle word wrap |
-| `<leader>q` | Normal | Open diagnostic quickfix |
-| `<leader>d` | Normal | Open diagnostic float |
-| `<leader>1` | Normal | Toggle the Cursor Agent floating TUI (`q` closes it) |
-| `<leader>2` | Normal | Toggle the OpenCode floating TUI (`q` closes it) |
-| `<leader>3` | Normal | Toggle the Claude floating TUI (`q` closes it) |
-| `<leader>4` | Normal | Toggle the Codex floating TUI (`q` closes it) |
-| `<leader>Ot` | Normal | Overseer: toggle task list |
-| `<leader>Or` | Normal | Overseer: run a task |
-| `<leader>OR` | Normal | Overseer: run a shell command |
-| `<leader>Oa` | Normal | Overseer: quick action |
-| `<leader>Oi` | Normal | Overseer: info |
-| `<leader>Ob` | Normal | Overseer: build a task |
-| `<leader>Oc` | Normal | Overseer: clear cache |
-| `<Esc><Esc>` | Terminal | Exit terminal mode |
+|---|---|---|
+| `jk` / `kj` | insert | Leave insert mode |
+| `<Esc>` | normal | Clear search highlight |
+| `<C-h/j/k/l>` | normal | Move between splits |
+| `<Esc><Esc>` | terminal | Leave terminal mode |
+| `<leader>q` | normal | Diagnostics to the location list |
+| `<leader>d` | normal | Show the diagnostic under the cursor |
+| `<leader>bf` | normal/visual | Format buffer (format-on-save is **off**) |
+| `<leader>tw` | normal | Toggle line wrap |
+| `<leader>th` | normal | Toggle LSP inlay hints |
+| `<leader>tc` | normal | Toggle treesitter context (sticky scope header) |
+| `<leader>tb` | normal | Toggle inline git blame for the current line |
+| `<leader>tD` | normal | Toggle showing deleted lines inline (gitsigns) |
 
-> The which-key panel uses the LazyVim-style `helix` preset. Use `<leader>?` or
-> run `:WhichKey` to explore more mappings dynamically.
+### Search `<leader>s`
 
-> The AI TUI mappings require the matching CLI on your `PATH` (`cursor-agent`,
-> `opencode`, `codex`, `claude`). Install Cursor Agent with
-> `curl https://cursor.com/install -fsS | bash`.
+| Key | Action | Engine |
+|---|---|---|
+| `<leader>sf` | Find files (frecency ranked) | fff |
+| `<leader>sg` | Live grep | fff |
+| `<leader>sz` | Fuzzy live grep | fff |
+| `<leader>sw` | Grep the word under the cursor | fff |
+| `<leader>sn` | Find files in the Neovim config | fff |
+| `<leader><leader>` | Switch between open buffers | fff + ui-select |
+| `<leader>s.` | Recently opened files | telescope |
+| `<leader>sh` | Help tags | telescope |
+| `<leader>sk` | Keymaps | telescope |
+| `<leader>sd` | Diagnostics | telescope |
+| `<leader>sr` | Resume the last picker | telescope |
+| `<leader>ss` | List all telescope pickers | telescope |
+| `<leader>/` | Fuzzy search in the current buffer | telescope |
+| `<leader>s/` | Grep in open files | telescope |
+| `<leader>sR` | Search and replace across the project (visual mode: the selection) | grug-far |
+
+Inside an fff picker:
+- `<CR>` opens the file.
+- `<C-s>`, `<C-v>` and `<C-t>` open it in a split, a vertical split or a tab.
+- `<Tab>` selects multiple files; `<C-q>` sends them to quickfix.
+- `<C-u>` / `<C-d>` scroll the preview.
+
+### Navigation
+
+| Key | Action |
+|---|---|
+| `<leader>o` | oil.nvim: edit the directory like a buffer (`-` goes up) |
+| `<leader>.` | Harpoon: tag the current file |
+| `<leader>m` | Harpoon: quick menu |
+| `H` / `L` | Harpoon: previous / next tagged file |
+
+### AI agents (floating terminals)
+
+| Key | Opens |
+|---|---|
+| `<leader>1` | `cursor-agent` |
+| `<leader>2` | `opencode` |
+| `<leader>3` | `claude` |
+| `<leader>4` | `codex` |
+
+Each key toggles its own float, and the session keeps running while the float
+is hidden. Inside a float:
+- `<Esc><Esc>` leaves terminal mode.
+- `q` (in normal mode) hides the float.
+
+### Git `<leader>g` and hunks `<leader>h`
+
+| Key | Action |
+|---|---|
+| `<leader>gc` | **Review uncommitted changes** (picker + inline diff) |
+| `<leader>gC` | Review the whole branch (vs merge-base with main) |
+| `<leader>gs` | Fugitive status (`s` stage, `u` unstage, `=` inline diff, `cc` commit) |
+| `<leader>gd` | Vertical diff of the file vs the index |
+| `<leader>gb` | Blame |
+| `<leader>gl` | Log |
+| `<leader>lg` | lazygit in a float |
+| `]c` / `[c` | Next / previous hunk |
+| `<leader>hs` / `<leader>hr` | Stage / reset hunk (also works on a visual selection) |
+| `<leader>hS` / `<leader>hR` | Stage / reset the whole buffer |
+| `<leader>hp` / `<leader>hb` | Preview hunk / blame line |
+| `<leader>hd` / `<leader>hD` | Diff vs index / vs last commit |
+
+### Merge conflicts
+
+| Key | Action |
+|---|---|
+| `<leader>gq` | Every conflict in the repo, in the quickfix list |
+| `<leader>gm` | 3-way split: ours, result, theirs |
+| `]x` / `[x` | Next / previous conflict |
+| `<leader>go` | Take **ours** |
+| `<leader>gt` | Take **theirs** |
+| `<leader>ga` | Take **both** (ours first) |
+| `<leader>gx` | Take **neither** |
+| `<leader>gw` | Stage the file (marks it resolved) |
+
+### LSP (when a server is attached)
+
+| Key | Action |
+|---|---|
+| `grd` | Go to definition |
+| `grr` | References |
+| `gri` | Implementations |
+| `grt` | Type definition |
+| `grD` | Declaration |
+| `grn` | Rename |
+| `gra` | Code action (normal and visual mode) |
+| `gO` / `gW` | Document / workspace symbols |
+| `K` | Hover docs (Neovim default) |
+| `<C-s>` | Signature help in insert mode (Neovim default) |
+
+### Completion (blink.cmp, default preset)
+
+| Key | Action |
+|---|---|
+| `<C-space>` | Open the menu / toggle docs |
+| `<C-n>` / `<C-p>` | Next / previous item |
+| `<C-y>` | Accept |
+| `<C-e>` | Close |
+| `<Tab>` / `<S-Tab>` | Jump through snippet placeholders |
+
+### Text objects and surround (mini.nvim)
+
+| Key | Example | Meaning |
+|---|---|---|
+| `a` / `i` objects | `va)`, `yinq`, `ci'` | Around / inside, with next (`n`) and last (`l`) variants |
+| `sa` | `saiw)` | **S**urround **a**dd: wrap a word in parentheses |
+| `sd` | `sd'` | **S**urround **d**elete: remove the quotes |
+| `sr` | `sr)'` | **S**urround **r**eplace: turn `)` into `'` |
+
+### Tasks `<leader>O`
+
+| Key | Action |
+|---|---|
+| `<leader>Or` / `<leader>OR` | Run a task / a shell command |
+| `<leader>Ot` | Toggle the task list |
+| `<leader>Oa` | Quick action on a task |
+| `<leader>Ob` | Build a task |
+| `<leader>Oi` | Overseer info |
+| `<leader>Oc` | Clear the task cache |
+
+### Neovide only
+
+| Key | Action |
+|---|---|
+| `<C-+>` / `<C-=>` | Zoom in |
+| `<C-->` | Zoom out |
 
 ---
 
-## Filetype Indentation
+## Workflows
 
-This configuration enforces consistent indentation across languages:
+### 1. Run an AI agent and review its changes
 
-| Language | Indent |
-|----------|--------|
-| JS/TS, CSS, SCSS, Vue, Svelte, YAML, JSON, Lua, HTML | 2 spaces |
-| Python, Rust, PHP, Markdown, Groovy, XML | 4 spaces |
-| Go, Templ | Tabs |
-| Make | Tabs (no expand) |
+```mermaid
+sequenceDiagram
+    participant You
+    participant Float as AI float (Space 3)
+    participant Picker as Changes picker (Space gc)
+    participant View as Inline diff tab
+    You->>Float: ask for a change
+    Float-->>You: files edited on disk (buffers auto-reload)
+    You->>Float: q to hide it (the session keeps running)
+    You->>Picker: Space gc
+    Picker-->>You: changed files with a diff preview
+    You->>View: Enter on a file
+    View-->>You: real file with changes highlighted
+    You->>View: ]c / [c hunks, ]f / [f files, edit and save
+    You->>View: Space gv for side-by-side, q to close
+```
 
----
-
-## About the Neovim Version Used
-
-This config targets the **latest stable** Neovim (the Cloud Agent environment
-installs it from the `stable` release channel). It has been validated on:
+**The picker** (`<leader>gc` for uncommitted changes, `<leader>gC` for the
+whole branch, `:GitChanges <ref>` for any ref):
 
 ```
-NVIM v0.12.5
-Build type: Release
-LuaJIT 2.1.1774638290
++- Git changes vs HEAD ---------------------+-- Diff -----------------------------+
+| > _                                       | @@ -12,7 +12,9 @@                   |
+|   M S  +12   -3  lua/options.lua          |  local x = 1                        |
+| > M    +40   -8  lua/custom/view.lua      | -local y = 2                        |
+|   ?    new       notes.txt                | +local y = 3                        |
+|   D      +0  -19  LICENSE                 | +local z = 4                        |
++- <CR> diff  <C-e> edit  <C-s> stage/unstage                                     |
++-------------------------------------------+-------------------------------------+
+  status: M modified  A added  D deleted  ? untracked     S = staged
 ```
 
+**The inline diff view.** This is your real file, editable, and the
+highlights update as you type:
+
+```
+ HEAD -> Working tree  lua/options.lua  [2/7]   ]f/[f files  ]c/[c hunks  <leader>gv split  q close
+  10  vim.o.splitright = true
+      vim.o.wrap = true                           <- red: removed line (virtual, not in the file)
+  11  vim.o.wrap = false                          <- green: added / changed line
+  12  vim.o.colorcolumn = "80"                    <- green
+  13  vim.o.scrolloff = 10
+```
+
+Press `<leader>gv` to switch to the **side-by-side** layout (base version on
+the left, read-only; your file on the right). `do` / `dp` and `]c` / `[c` work
+there as in normal diff mode. The layout you pick is remembered.
+
+> Buffers reload by themselves when an agent changes files on disk:
+> `:checktime` runs on focus, buffer enter, cursor idle and terminal close.
+
+### 2. Resolve merge conflicts
+
+```mermaid
+flowchart TD
+    M["git merge / rebase hits conflicts"] --> Q["Space gq<br/>every conflict in quickfix"]
+    Q --> F["]q / [q to the next conflicted file"]
+    F --> X["]x / [x to the next conflict"]
+    X --> R{"pick a side"}
+    R -->|"Space go"| O[ours]
+    R -->|"Space gt"| T[theirs]
+    R -->|"Space ga"| B[both]
+    R -->|"Space gx"| N[neither]
+    O & T & B & N --> L{"conflicts left?"}
+    L -->|yes| X
+    L -->|"no (you get a notice)"| W["Space gw<br/>stage file = resolved"]
+    W --> F
+    X -.->|"need more context"| S["Space gm<br/>3-way split"]
+    S --> R
+```
+
+Conflicted files are coloured inline, with hints on the marker lines:
+
+```
+  <<<<<<< HEAD                               ours: <leader>go
+  local timeout = 30                         <- green: ours
+  ||||||| base                               base   (diff3 / zdiff3 style only)
+  local timeout = 10                         <- red: common ancestor
+  =======                                    both: <leader>ga | none: <leader>gx
+  local timeout = 60                         <- blue: theirs
+  >>>>>>> feature                            theirs: <leader>gt
+```
+
+`<leader>gm` opens fugitive's 3-way split:
+
+```
++--------------------+--------------------+--------------------+
+| ours (//2)         | working copy       | theirs (//3)       |
+| HEAD's version     | <- edit this one   | incoming version   |
++--------------------+--------------------+--------------------+
+```
+
+The `<leader>go` / `gt` / `ga` / `gx` keys also work in the middle window.
+On a diff block that has no conflict markers, `<leader>go` / `<leader>gt` fall
+back to `:diffget //2` / `//3`. When you are done, `<leader>gw` stages the
+file and fugitive closes the split.
+
+### 3. Find files, grep and replace
+
+```mermaid
+flowchart LR
+    S["Space s ..."] --> F["sf  files"]
+    S --> G["sg  grep"]
+    S --> Z["sz  fuzzy grep"]
+    S --> W["sw  word under cursor"]
+    G -->|"Tab to select, C-q"| QF["quickfix list"]
+    QF -->|"cdo s/a/b/ then update"| Done
+    S --> R["sR  grug-far: project-wide<br/>search and replace with preview"]
+```
+
+- **fff** handles files and grep (fast, ranked by frecency, with a preview).
+  **Telescope** covers everything else: help, keymaps, diagnostics, LSP
+  pickers, and `vim.ui.select`.
+- `<leader>sR` opens grug-far: type a search and a replacement, check the live
+  preview, then apply.
+
+### 4. Everyday git
+
+```
+ <Space>gs  fugitive status            <Space>lg  lazygit (full TUI in a float)
+ ]c / [c    jump between hunks         <Space>hp  preview the hunk
+ <Space>hs  stage the hunk             <Space>hr  reset the hunk
+ <Space>tb  inline blame               <Space>gb  full blame window
+```
+
+The sign column shows `+` added, `~` changed and `_` deleted lines from
+gitsigns.
+
+### 5. Code intelligence (LSP)
+
+Servers start when you open a matching file:
+
+| Language | Server(s) |
+|---|---|
+| Lua | `lua_ls` |
+| Python | `ty` (types), `ruff` (lint/format) |
+| TS/JS | `vtsls` |
+| CSS / Tailwind | `cssls`, `tailwindcss` |
+| Go | `gopls` |
+| Rust | `rust_analyzer` |
+| C/C++ | `clangd` |
+| Java | `jdtls` via nvim-java (loads only for Java files) |
+
+Inlay hints are on where the server supports them; toggle them with
+`<leader>th`. Diagnostics show as `E` / `W` / `I` / `H` in the sign column,
+with virtual text.
+
+### 6. Tasks and builds
+
+`<leader>Or` lists the tasks overseer finds (make, npm scripts, cargo and so
+on). `<leader>OR` runs any shell command, and `<leader>Ot` shows the running
+and finished tasks.
+
 ---
 
-## License
+## What you see on screen
 
-This project is released under the [MIT License](LICENSE).
+```
++--------------------------------------------------------------------------------+
+|  12 | function M.setup()             <- treesitter context header (<leader>tc) |
+|-----+--------------------------------------------------------------------------|
+| + 13|   local x = 1                    gitsigns column: + ~ _                  |
+| ~ 14|   x = x + 1      |               indent guides (ibl), 80-col ruler       |
+|E  15|   foo(           <- error: ...   diagnostics: sign + virtual text        |
++--------------------------------------------------------------------------------+
+| NORMAL | main +1 ~2 E1 lua_ls | lua/init.lua | utf-8 lua | 15:3  14:09:45 IST   |
++--------------------------------------------------------------------------------+
+   mode    git / diff / diagnostics / LSP       file           position  clock (IST)
+```
+
+- **Colour scheme:** gruvbox with a transparent background, so the terminal
+  background shows through.
+- **Statusline:** mini.statusline. The clock always shows **IST**
+  (UTC+05:30), whatever the machine's timezone is, and refreshes every second.
+- **Which-key:** the `helix` preset (a right-side panel) with no delay.
 
 ---
 
-> Inspired by [kickstart.nvim](https://github.com/nvim-lua/kickstart.nvim) and tailored for daily use.
+## Languages and tooling
+
+| Language | Format (`<leader>bf`) | Lint | Indent |
+|---|---|---|---|
+| Lua | stylua | - | 2 spaces |
+| Python | ruff (organize imports + format) | ruff (LSP) | 4 spaces |
+| JS / TS / TSX | prettierd, prettier | eslint_d | 2 spaces |
+| Go | goimports, gofmt | golangci-lint | tabs |
+| Java | google-java-format | jdtls | 2 spaces |
+| Rust | rust_analyzer (LSP) | rust_analyzer | 4 spaces |
+| C / C++ | clangd (LSP) | clangd | 2 spaces |
+| Markdown | mdformat | - | 4 spaces (rendered in normal mode) |
+| HTML | superhtml | - | 2 spaces |
+| Groovy | npm-groovy-lint | - | 4 spaces |
+| Make | - | - | tabs (no expand) |
+
+Indentation is enforced per filetype in `lua/options.lua`, and guess-indent
+handles everything else. Formatter and linter binaries are installed by Mason
+(see the `ensure_installed` list in `lua/kickstart/plugins/lspconfig.lua`).
+
+---
+
+## Editor behaviour
+
+- **Clipboard:** shares the system clipboard (`unnamedplus`).
+- **Undo:** persistent undo history (`undofile`).
+- **Search:** smart-case (`ignorecase` + `smartcase`). `:s` shows a live
+  preview (`inccommand=split`).
+- **Lines:** no soft wrap by default, an 80-column ruler, `scrolloff=10` and a
+  highlighted cursor line.
+- **Whitespace:** `>` for tab, `-` for trailing space, `+` for nbsp.
+- **Splits:** new splits open to the right / below, and windows re-balance
+  when the terminal is resized.
+- **Diffs:** vertical by default, using the histogram algorithm, with
+  character-level inline highlights.
+- **Unsaved changes:** `:q` asks before discarding them (`confirm`).
+- **External edits:** buffers reload by themselves when files change on disk.
+- **Neovide:** uses `SauceCodePro NFM:h12`; zoom with `<C-+>` / `<C-->`.
+
+---
+
+## Layout of this repo
+
+```
+init.lua                    leader, transparency, then the modules below
+lua/
+  options.lua               options, filetype indents, auto-reload, diffopt
+  keymaps.lua               core keymaps (jk, splits, wrap, Neovide zoom)
+  lazy-bootstrap.lua        installs lazy.nvim
+  lazy-plugins.lua          kickstart specs + { import = "custom.plugins" }
+  kickstart/plugins/        LSP, completion, treesitter, gitsigns, which-key, ...
+  custom/
+    plugins/                one file per extra plugin (auto-imported)
+    float_term.lua          shared floating-terminal launcher (AI TUIs)
+    claude.lua, codex.lua,  one-line wrappers around float_term
+    cursor_agent.lua, opencode.lua
+    git_changes/            the <leader>gc reviewer (async git, picker, view)
+    git_conflict.lua        conflict highlighting and resolution
+```
+
+**To add a plugin:** drop a file returning a `LazySpec` into
+`lua/custom/plugins/`. Put its keymaps in the spec's `keys = { ... }` so they
+work before the plugin loads.
+
+---
+
+## Maintenance commands
+
+```sh
+nvim --headless "+qa"                 # smoke test: load the config, show errors
+nvim --headless "+Lazy! sync" +qa     # install / update plugins
+nvim --headless "+checkhealth" +qa    # health checks
+stylua --check .                      # formatting (80 cols, 2 spaces)
+nvim --startuptime /tmp/st.log +qa    # profile startup
+```
+
+`lazy-lock.json` is gitignored, so plugin versions float. Run `:Lazy` to see
+what loaded and when.
+
+---
+
+MIT licensed. See [LICENSE](LICENSE). Inspired by
+[kickstart.nvim](https://github.com/nvim-lua/kickstart.nvim).
