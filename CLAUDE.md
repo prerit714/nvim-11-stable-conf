@@ -79,6 +79,12 @@ Nothing blocks the UI: all git work is async.
 - Timers are one-shot `vim.uv` timers that are closed on finish, on cancel and on `VimLeavePre`. A finished timer shows a WARN notification and rings the terminal bell.
 - `mini.lua` calls `timebox.statusline()` only when `package.loaded["custom.timebox"]` is set, so the module never loads at startup.
 
+### Pinned dirs / start screen
+
+The start screen is `mini.starter`, set up in `mini.lua`. It auto-opens only when there are no file args, so `nvim .` still opens Oil. Its first section comes from `lua/custom/pinned_dirs.lua`. `lua/custom/plugins/pinned-dirs.lua` is a local lazy spec (dir `pinned-dirs-lazy/`): its `init` calls `pinned_dirs.setup()`, and it binds `<leader>pp` (toggle pin of the current project root), `<leader>pl` (pick a pinned dir) and `<leader>ps` (open the start screen).
+- Pins are stored in `stdpath("data")/pinned_dirs.json`. The file is read lazily, because the module is required at startup. Paths are normalized and compared case-insensitively on Windows.
+- A `BufEnter` autocmd (augroup `PinnedDirs`) global-`:cd`s into the longest pinned dir that contains the file. It applies only to `buftype == ""` buffers without a URI scheme, and it skips windows that have a local dir. fff.nvim re-indexes on its own via its global `DirChanged` autocmd, so there is no need to call it.
+
 ### Startup / lazy-loading
 
 Keep the startup path light: nvim-lspconfig (and with it mason, fidget, blink.cmp) loads on `BufReadPre`/`BufNewFile`, nvim-java on `ft = "java"` (jdtls is excluded from mason-lspconfig's `automatic_enable` so nvim-java enables it after its setup), and telescope/which-key on `VeryLazy`. Plugin keymaps belong in lazy `keys` specs, not in `config`, so they work before the plugin loads.

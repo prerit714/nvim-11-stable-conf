@@ -27,6 +27,7 @@ without leaving the editor.
    - [Code intelligence (LSP)](#5-code-intelligence-lsp)
    - [Tasks and builds](#6-tasks-and-builds)
    - [Timebox yourself](#7-timebox-yourself)
+   - [Pin projects and switch between them](#8-pin-projects-and-switch-between-them)
 5. [What you see on screen](#what-you-see-on-screen)
 6. [Languages and tooling](#languages-and-tooling)
 7. [Editor behaviour](#editor-behaviour)
@@ -239,6 +240,14 @@ Or use the command: `:Timebox 25 Write tests`, `:Timebox list`,
 `:Timebox cancel`, `:Timebox cancel all`. Decimals work, e.g. `0.5`
 for 30 seconds.
 
+### Pinned dirs and start screen `<leader>p`
+
+| Key | Action |
+|---|---|
+| `<leader>pp` | Pin the current project (and cd into it), or unpin it |
+| `<leader>pl` | Pick a pinned dir: cd into it and open the file finder |
+| `<leader>ps` | Open the start screen |
+
 ### Neovide only
 
 | Key | Action |
@@ -424,6 +433,26 @@ You can run several timers at once. The statusline shows the one closest to
 finishing, plus `+N` for the others. The timer code is not even loaded until
 you start your first timer.
 
+### 8. Pin projects and switch between them
+
+```mermaid
+flowchart LR
+    N["open Neovide (no file)"] --> S["start screen<br/>Pinned / Recent files / Actions"]
+    S -->|pick a pinned dir| C["cd into it + file finder"]
+    F["file in a repo"] -->|"Space pp"| P["pinned + cd to its git root"]
+    E["enter any file inside a pinned dir"] --> A["cwd switches to that pinned dir"]
+```
+
+`<leader>pp` pins the project you are in: the git root of the current file
+(or its folder), the folder an Oil buffer shows, or the cwd on the start
+screen. Press it again to unpin. Pins live in
+`stdpath("data")/pinned_dirs.json`, so they survive restarts no matter where
+Neovim was launched. Picking a pinned dir, or entering a file that lives inside
+one, makes it the global cwd. fff, harpoon and telescope follow along. Files
+outside every pinned dir leave the cwd alone, and so do windows with an
+`:lcd`/`:tcd`. AI terminals that are already running keep the directory they
+started in.
+
 ---
 
 ## What you see on screen
@@ -509,6 +538,7 @@ lua/
     git_changes/            the <leader>gc reviewer (async git, picker, view)
     git_conflict.lua        conflict highlighting and resolution
     timebox.lua             countdown timers (:Timebox, <leader>T, statusline)
+    pinned_dirs.lua         pinned projects, start-screen items, auto-cd
 ```
 
 **To add a plugin:** drop a file returning a `LazySpec` into
