@@ -137,6 +137,7 @@ Inside an fff picker:
 | `<leader>.` | Harpoon: tag the current file |
 | `<leader>m` | Harpoon: quick menu |
 | `H` / `L` | Harpoon: previous / next tagged file |
+| `<leader>M` | loki.nvim: rendered read-only view of the markdown buffer (`:Loki [file]` from anywhere; `q` quits) |
 
 ### AI agents (floating terminals)
 

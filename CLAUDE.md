@@ -45,6 +45,13 @@ Four CLIs (`cursor-agent`, `opencode`, `claude`, `codex`) open in lazygit-style 
 
 **Gotcha:** lazy.nvim keys local plugins by `dir`, so specs sharing a `dir` get merged. Each launcher spec needs a distinct `dir`. That is why the empty `claude-lazy/` and `codex-lazy/` directories exist; cursor-agent uses the config root and opencode uses `lua/custom`. A new launcher should add its own `<tool>-lazy/init.lua` (returning `{}`) and point `dir` at it.
 
+### Markdown viewer (loki)
+
+`<leader>M` (markdown buffers only, via lazy `ft` keys) and `:Loki [file]` open a read-only rendered view of the buffer in the external `loki` TUI (`q`/`Esc`/`Ctrl+C` quits; it watches the file and re-renders on change, and unsaved buffers are shown through a temp file). Both come from the external plugin [`prerit714/loki.nvim`](https://github.com/prerit714/loki.nvim); `lua/custom/plugins/loki.lua` is just its lazy spec (`cmd = "Loki"` plus the key). `<leader>m*` is avoided because `<leader>m` is harpoon's quick menu.
+
+- The plugin ships the Go source and a `build.lua` that lazy.nvim runs on install/update to compile `bin/loki` (needs Go; `:Lazy build loki.nvim` reruns it). Binary resolution order: `vim.g.loki_cmd` (string or argv list), then `loki` on PATH, then the plugin's `bin/loki`. Style: `vim.g.loki_style` (`dark`/`light`/`auto`, default follows `'background'`), or `require("loki").setup({ cmd, style })`.
+- `:checkhealth loki` runs `loki health` and maps its lines onto `vim.health`. The plugin is lazy, so its health provider is only on the runtimepath after it has loaded (first use, or `:Lazy load loki.nvim`); before that checkhealth reports no provider.
+
 ### Git changes review
 
 `<leader>gc` (uncommitted vs `HEAD`, incl. untracked; inside the diff tab it reuses that tab's base), `<leader>gC` (vs merge-base with the default branch) and `:GitChanges [ref]` open a Telescope picker of changed files with a unified-diff preview — meant for reviewing edits made by the AI TUIs. fff.nvim has no custom-source API, hence Telescope.
