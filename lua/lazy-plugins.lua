@@ -1,6 +1,7 @@
 require("lazy").setup({
   {
     "NMAC427/guess-indent.nvim",
+    event = { "BufReadPost", "BufNewFile" },
     opts = {
       filetype_exclude = { "netrw", "tutor", "html" },
     },
@@ -30,6 +31,19 @@ require("lazy").setup({
 
   { import = "custom.plugins" },
 }, {
+  performance = {
+    rtp = {
+      -- Unused runtime plugins; oil.nvim replaces netrw as the file explorer.
+      disabled_plugins = {
+        "gzip",
+        "netrwPlugin",
+        "tarPlugin",
+        "tohtml",
+        "tutor",
+        "zipPlugin",
+      },
+    },
+  },
   ui = {
     icons = {
       cmd = "cmd ",

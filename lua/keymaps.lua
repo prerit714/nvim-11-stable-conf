@@ -63,13 +63,13 @@ vim.keymap.set("i", "kj", "<Esc>", {
 local toggle_wrap = function()
   vim.wo.wrap = not vim.wo.wrap
   if vim.wo.wrap then
-    vim.notify("[toggle_wrap] word wrap enabled", vim.log.levels.WARN)
+    vim.notify("[toggle_wrap] word wrap enabled", vim.log.levels.INFO)
   else
-    vim.notify("[toggle_wrap] word wrap disabled", vim.log.levels.WARN)
+    vim.notify("[toggle_wrap] word wrap disabled", vim.log.levels.INFO)
   end
 end
 
-vim.keymap.set("n", "<leader>w", toggle_wrap)
+vim.keymap.set("n", "<leader>tw", toggle_wrap, { desc = "[T]oggle [W]rap" })
 
 -- Neovide-only: adjust the font size (zoom) at runtime with Ctrl + + / Ctrl + -.
 -- vim.g.neovide is set only when running inside Neovide, so these mappings do

@@ -2,7 +2,7 @@
 return {
   {
     "folke/which-key.nvim",
-    event = "VimEnter",
+    event = "VeryLazy",
     opts = {
       -- LazyVim-style right-side floating panel.
       preset = "helix",

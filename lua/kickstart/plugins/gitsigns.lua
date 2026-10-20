@@ -2,6 +2,7 @@
 return {
   {
     "lewis6991/gitsigns.nvim",
+    event = { "BufReadPre", "BufNewFile" },
     opts = {
       signs = {
         add = { text = "+" },
@@ -58,12 +59,6 @@ return {
           "<leader>hS",
           gitsigns.stage_buffer,
           { desc = "git [S]tage buffer" }
-        )
-        map(
-          "n",
-          "<leader>hu",
-          gitsigns.stage_hunk,
-          { desc = "git [u]ndo stage hunk" }
         )
         map(
           "n",

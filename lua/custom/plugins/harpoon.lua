@@ -20,7 +20,7 @@ return {
         desc = "[Harpoon] Tag current buffer",
       },
       {
-        "<leader>h",
+        "<leader>m",
         function()
           local harpoon = require("harpoon")
           harpoon.ui:toggle_quick_menu(harpoon:list())

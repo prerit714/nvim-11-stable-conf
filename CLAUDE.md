@@ -47,9 +47,15 @@ Four CLIs (`cursor-agent`, `opencode`, `claude`, `codex`) open in lazygit-style 
 
 ### Git changes review
 
-`<leader>gc` (uncommitted vs `HEAD`, incl. untracked), `<leader>gC` (vs merge-base with the default branch) and `:GitChanges [ref]` open a Telescope picker of changed files with a unified-diff preview — meant for reviewing edits made by the AI TUIs. fff.nvim has no custom-source API, hence Telescope.
+`<leader>gc` (uncommitted vs `HEAD`, incl. untracked; inside the diff tab it reuses that tab's base), `<leader>gC` (vs merge-base with the default branch) and `:GitChanges [ref]` open a Telescope picker of changed files with a unified-diff preview — meant for reviewing edits made by the AI TUIs. fff.nvim has no custom-source API, hence Telescope.
 
-- `lua/custom/git_changes/git.lua` — synchronous `vim.system` git helpers, always run with `cwd` = repo root (paths are root-relative).
-- `lua/custom/git_changes/picker.lua` — the picker: `<CR>` side-by-side diff, `<C-e>` edit file, `<C-s>` stage/unstage toggle.
-- `lua/custom/git_changes/view.lua` — a single reused diff tabpage: left is a read-only `gitchanges://<base>/<path>` scratch buffer, right is the real file (native diff mode, so `]c`/`[c`/`do`/`dp` work). Buffer-local `]f`/`[f` (next/prev file), `<leader>gc` (reopen picker), `q` (close tab); the maps are removed from real file buffers when the view moves on or closes.
-- `lua/custom/plugins/git-changes.lua` — local lazy spec (dir `git-changes-lazy/`, per the gotcha above) binding the keys and defining `:GitChanges`.
+Nothing blocks the UI: all git work is async.
+
+- `lua/custom/git_changes/git.lua` — coroutine-based helpers. `git.run`/`git.run_all` only work inside `git.async(fn)`: they yield until the `vim.system` process(es) exit and resume via `vim.schedule`, so code after them is on the main loop. Commands run with `cwd` = repo root (paths are root-relative). `git.root()` uses `vim.fs.root` and spawns no process.
+- `lua/custom/git_changes/picker.lua` — `open` must run inside `git.async`. It fetches changes, then builds the Telescope picker in a fresh `vim.schedule` tick, because Telescope runs its own plenary.async coroutines. Previews are async and cached per path. Keys: `<CR>` side-by-side diff, `<C-e>` edit file, `<C-s>` stage/unstage toggle.
+- `lua/custom/git_changes/view.lua` — a single reused diff tabpage: left is a read-only `gitchanges://<base>/<path>` scratch buffer, filled asynchronously; right is the real file (native diff mode, so `]c`/`[c`/`do`/`dp` work). A generation counter drops stale `git show` results. Buffer-local `]f`/`[f`/`q` are removed from real file buffers when the view moves on or closes.
+- `lua/custom/plugins/git-changes.lua` — local lazy spec (dir `git-changes-lazy/`, per the gotcha above) binding the keys and defining `:GitChanges`. Ref completion is served from an async-refreshed cache.
+
+### Startup / lazy-loading
+
+Keep the startup path light: nvim-lspconfig (and with it mason, fidget, blink.cmp) loads on `BufReadPre`/`BufNewFile`, nvim-java on `ft = "java"` (jdtls is excluded from mason-lspconfig's `automatic_enable` so nvim-java enables it after its setup), and telescope/which-key on `VeryLazy`. Plugin keymaps belong in lazy `keys` specs, not in `config`, so they work before the plugin loads.

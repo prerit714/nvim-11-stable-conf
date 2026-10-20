@@ -1,7 +1,10 @@
--- Thin synchronous wrappers over the git CLI used by the changes picker.
+-- Async wrappers over the git CLI used by the changes picker.
 --
--- Every command runs with `cwd` set to the repository root so paths returned
--- by git (always root-relative) can be passed straight back to it.
+-- Nothing here blocks the UI: `run` must be called inside a coroutine started
+-- by `async`, and it yields until the git process exits. Results are resumed
+-- through `vim.schedule`, so code after a `run` always executes on the main
+-- loop and may call any API. Every command runs with `cwd` set to the
+-- repository root so root-relative paths from git can be passed straight back.
 
 local M = {}
 
@@ -9,17 +12,77 @@ local M = {}
 ---@class GitChanges.Entry
 ---@field status string Single letter: M, A, D, T, U, or ? for untracked.
 ---@field path string Path relative to the repository root.
----@field added integer? Lines added (nil for binary files).
----@field removed integer? Lines removed (nil for binary files).
+---@field added integer? Lines added (nil for binary or untracked files).
+---@field removed integer? Lines removed (nil for binary or untracked files).
+---@field staged boolean Whether the file has changes in the index.
 
----Run git synchronously.
----@param args string[] Arguments after `git`.
----@param cwd string? Working directory (defaults to Neovim's cwd).
+---Report a failure in a consistent way.
+---@param msg string
+---@param level integer? vim.log.levels value (defaults to ERROR).
+function M.notify(msg, level)
+  vim.notify("[git-changes] " .. msg, level or vim.log.levels.ERROR)
+end
+
+---Run `fn` in a new coroutine, reporting any error it raises.
+---@param fn fun()
+function M.async(fn)
+  local co = coroutine.create(function()
+    xpcall(fn, function(err)
+      M.notify(debug.traceback(tostring(err), 2))
+    end)
+  end)
+  local ok, err = coroutine.resume(co)
+  if not ok then
+    M.notify(tostring(err))
+  end
+end
+
+---argv for a git invocation.
+---@param args string[]
+---@return string[]
+function M.cmd(args)
+  return vim.list_extend({ "git", "--no-pager" }, args)
+end
+
+---Start several git commands concurrently and yield until all finish.
+---Must be called from a coroutine started by `async`.
+---@param root string Working directory.
+---@param list string[][] One argument list per command.
+---@return { ok: boolean, out: string }[] results In the order of `list`.
+function M.run_all(root, list)
+  local co = assert(coroutine.running(), "git.run_all outside M.async")
+  local results, pending = {}, #list
+  for i, args in ipairs(list) do
+    local ok, err = pcall(
+      vim.system,
+      M.cmd(args),
+      { cwd = root, text = true },
+      function(res)
+        results[i] = { ok = res.code == 0, out = res.stdout or "" }
+        pending = pending - 1
+        if pending == 0 then
+          vim.schedule(function()
+            coroutine.resume(co)
+          end)
+        end
+      end
+    )
+    -- vim.system throws synchronously when git is missing.
+    if not ok then
+      error("failed to run git: " .. tostring(err), 0)
+    end
+  end
+  coroutine.yield()
+  return results
+end
+
+---Run one git command and yield until it exits.
+---@param root string
+---@param args string[]
 ---@return boolean ok, string stdout
-local function run(args, cwd)
-  local cmd = vim.list_extend({ "git", "--no-pager" }, args)
-  local res = vim.system(cmd, { cwd = cwd, text = true }):wait()
-  return res.code == 0, res.stdout or ""
+function M.run(root, args)
+  local res = M.run_all(root, { args })[1]
+  return res.ok, res.out
 end
 
 ---Split NUL-separated output, dropping the trailing empty field.
@@ -33,14 +96,11 @@ local function split_nul(out)
   return fields
 end
 
----Repository root for Neovim's cwd, or nil outside a repository.
+---Repository root for the current buffer (or Neovim's cwd), found without
+---spawning a process. Nil outside a repository.
 ---@return string?
 function M.root()
-  local ok, out = run({ "rev-parse", "--show-toplevel" })
-  if not ok then
-    return nil
-  end
-  return vim.trim(out)
+  return vim.fs.root(0, ".git") or vim.fs.root(assert(vim.uv.cwd()), ".git")
 end
 
 ---Whether `ref` resolves to a commit.
@@ -48,7 +108,9 @@ end
 ---@param ref string
 ---@return boolean
 function M.is_ref(root, ref)
-  return (run({ "rev-parse", "--verify", "--quiet", ref .. "^{commit}" }, root))
+  return (
+    M.run(root, { "rev-parse", "--verify", "--quiet", ref .. "^{commit}" })
+  )
 end
 
 ---Merge-base of HEAD with the default branch (origin/HEAD, main, master),
@@ -58,9 +120,9 @@ end
 ---@return string label Human-readable name for the base.
 function M.default_base(root)
   local candidates = {}
-  local ok, out = run(
-    { "symbolic-ref", "--quiet", "--short", "refs/remotes/origin/HEAD" },
-    root
+  local ok, out = M.run(
+    root,
+    { "symbolic-ref", "--quiet", "--short", "refs/remotes/origin/HEAD" }
   )
   if ok and vim.trim(out) ~= "" then
     table.insert(candidates, vim.trim(out))
@@ -68,11 +130,9 @@ function M.default_base(root)
   vim.list_extend(candidates, { "main", "master", "origin/main" })
 
   for _, ref in ipairs(candidates) do
-    if M.is_ref(root, ref) then
-      local mb_ok, mb = run({ "merge-base", "HEAD", ref }, root)
-      if mb_ok and vim.trim(mb) ~= "" then
-        return vim.trim(mb), "merge-base(" .. ref .. ")"
-      end
+    local mb_ok, mb = M.run(root, { "merge-base", "HEAD", ref })
+    if mb_ok and vim.trim(mb) ~= "" then
+      return vim.trim(mb), "merge-base(" .. ref .. ")"
     end
   end
   return "HEAD", "HEAD"
@@ -84,19 +144,34 @@ end
 ---@param base string
 ---@return GitChanges.Entry[]
 function M.changes(root, base)
-  local by_path = {}
-
-  local _, names =
-    run({ "diff", "--name-status", "--no-renames", "-z", base, "--" }, root)
-  local fields = split_nul(names)
-  for i = 1, #fields - 1, 2 do
-    local status = fields[i]:sub(1, 1)
-    by_path[fields[i + 1]] = { status = status, path = fields[i + 1] }
+  local res = M.run_all(root, {
+    { "diff", "--name-status", "--no-renames", "-z", base, "--" },
+    { "diff", "--numstat", "--no-renames", "-z", base, "--" },
+    { "ls-files", "--others", "--exclude-standard", "-z" },
+    { "diff", "--cached", "--name-only", "-z" },
+  })
+  if not res[1].ok then
+    error("git diff failed against " .. base, 0)
   end
 
-  local _, nums =
-    run({ "diff", "--numstat", "--no-renames", "-z", base, "--" }, root)
-  for _, rec in ipairs(split_nul(nums)) do
+  local staged = {}
+  for _, path in ipairs(split_nul(res[4].out)) do
+    staged[path] = true
+  end
+
+  ---@type table<string, GitChanges.Entry>
+  local by_path = {}
+  local fields = split_nul(res[1].out)
+  for i = 1, #fields - 1, 2 do
+    local path = fields[i + 1]
+    by_path[path] = {
+      status = fields[i]:sub(1, 1),
+      path = path,
+      staged = staged[path] == true,
+    }
+  end
+
+  for _, rec in ipairs(split_nul(res[2].out)) do
     local added, removed, path = rec:match("^(%S+)\t(%S+)\t(.*)$")
     local entry = path and by_path[path]
     if entry then
@@ -105,18 +180,8 @@ function M.changes(root, base)
     end
   end
 
-  local _, untracked =
-    run({ "ls-files", "--others", "--exclude-standard", "-z" }, root)
-  for _, path in ipairs(split_nul(untracked)) do
-    local n = 0
-    local fd = io.open(root .. "/" .. path, "rb")
-    if fd then
-      for _ in fd:lines() do
-        n = n + 1
-      end
-      fd:close()
-    end
-    by_path[path] = { status = "?", path = path, added = n, removed = 0 }
+  for _, path in ipairs(split_nul(res[3].out)) do
+    by_path[path] = { status = "?", path = path, staged = false }
   end
 
   local list = vim.tbl_values(by_path)
@@ -132,7 +197,7 @@ end
 ---@param path string
 ---@return string[]
 function M.show(root, base, path)
-  local ok, out = run({ "show", base .. ":" .. path }, root)
+  local ok, out = M.run(root, { "show", base .. ":" .. path })
   if not ok then
     return {}
   end
@@ -149,56 +214,39 @@ end
 ---@return string[]
 function M.diff_cmd(base, entry)
   if entry.status == "?" then
-    return {
-      "git",
-      "--no-pager",
+    return M.cmd({
       "diff",
       "--no-color",
       "--no-index",
       "--",
       "/dev/null",
       entry.path,
-    }
+    })
   end
-  return {
-    "git",
-    "--no-pager",
-    "diff",
-    "--no-color",
-    "--no-renames",
-    base,
-    "--",
-    entry.path,
-  }
+  return M.cmd({ "diff", "--no-color", "--no-renames", base, "--", entry.path })
 end
 
----Paths currently staged in the index.
----@param root string
----@return table<string, boolean>
-function M.staged(root)
-  local _, out = run({ "diff", "--cached", "--name-only", "-z" }, root)
-  local set = {}
-  for _, path in ipairs(split_nul(out)) do
-    set[path] = true
-  end
-  return set
-end
-
----Stage `path` if it has unstaged changes, otherwise unstage it.
+---Stage `path` if it has unstaged (or untracked) changes, otherwise unstage
+---it.
 ---@param root string
 ---@param path string
 ---@return boolean staged True when the file ended up staged.
 function M.toggle_stage(root, path)
-  local _, unstaged = run({ "diff", "--name-only", "-z", "--", path }, root)
-  local _, untracked = run(
-    { "ls-files", "--others", "--exclude-standard", "-z", "--", path },
-    root
-  )
-  if unstaged ~= "" or untracked ~= "" then
-    run({ "add", "-A", "--", path }, root)
+  local _, out = M.run(root, { "status", "--porcelain=v1", "-z", "--", path })
+  -- Porcelain v1: "XY path"; Y (worktree column) is non-blank when there is
+  -- something left to stage ("?" for untracked files).
+  local worktree = out:sub(2, 2)
+  if worktree ~= "" and worktree ~= " " then
+    local ok = M.run(root, { "add", "-A", "--", path })
+    if not ok then
+      error("git add failed for " .. path, 0)
+    end
     return true
   end
-  run({ "restore", "--staged", "--", path }, root)
+  local ok = M.run(root, { "restore", "--staged", "--", path })
+  if not ok then
+    error("git restore --staged failed for " .. path, 0)
+  end
   return false
 end
 

@@ -6,7 +6,7 @@
 return {
   {
     "nvim-telescope/telescope.nvim",
-    event = "VimEnter",
+    event = "VeryLazy",
     dependencies = {
       "nvim-lua/plenary.nvim",
       {
@@ -18,6 +18,74 @@ return {
       },
       { "nvim-telescope/telescope-ui-select.nvim" },
       { "nvim-tree/nvim-web-devicons", enabled = vim.g.have_nerd_font },
+    },
+    -- Declared as lazy keys so they work before VeryLazy fires and load
+    -- telescope on first use.
+    keys = {
+      {
+        "<leader>sh",
+        function()
+          require("telescope.builtin").help_tags()
+        end,
+        desc = "[S]earch [H]elp",
+      },
+      {
+        "<leader>sk",
+        function()
+          require("telescope.builtin").keymaps()
+        end,
+        desc = "[S]earch [K]eymaps",
+      },
+      {
+        "<leader>ss",
+        function()
+          require("telescope.builtin").builtin()
+        end,
+        desc = "[S]earch [S]elect Telescope",
+      },
+      {
+        "<leader>sd",
+        function()
+          require("telescope.builtin").diagnostics()
+        end,
+        desc = "[S]earch [D]iagnostics",
+      },
+      {
+        "<leader>s.",
+        function()
+          require("telescope.builtin").oldfiles()
+        end,
+        desc = "[S]earch Recent Files",
+      },
+      {
+        "<leader>sr",
+        function()
+          require("telescope.builtin").resume()
+        end,
+        desc = "[S]earch [R]esume",
+      },
+      {
+        "<leader>/",
+        function()
+          require("telescope.builtin").current_buffer_fuzzy_find(
+            require("telescope.themes").get_dropdown({
+              winblend = 10,
+              previewer = false,
+            })
+          )
+        end,
+        desc = "[/] Fuzzily search in current buffer",
+      },
+      {
+        "<leader>s/",
+        function()
+          require("telescope.builtin").live_grep({
+            grep_open_files = true,
+            prompt_title = "Live Grep in Open Files",
+          })
+        end,
+        desc = "[S]earch [/] in Open Files",
+      },
     },
     config = function()
       require("telescope").setup({
@@ -47,54 +115,6 @@ return {
 
       pcall(require("telescope").load_extension, "fzf")
       pcall(require("telescope").load_extension, "ui-select")
-
-      local builtin = require("telescope.builtin")
-      vim.keymap.set(
-        "n",
-        "<leader>sh",
-        builtin.help_tags,
-        { desc = "[S]earch [H]elp" }
-      )
-      vim.keymap.set(
-        "n",
-        "<leader>sk",
-        builtin.keymaps,
-        { desc = "[S]earch [K]eymaps" }
-      )
-      vim.keymap.set(
-        "n",
-        "<leader>ss",
-        builtin.builtin,
-        { desc = "[S]earch [S]elect Telescope" }
-      )
-      vim.keymap.set(
-        "n",
-        "<leader>sd",
-        builtin.diagnostics,
-        { desc = "[S]earch [D]iagnostics" }
-      )
-      vim.keymap.set(
-        "n",
-        "<leader>sr",
-        builtin.resume,
-        { desc = "[S]earch [R]esume" }
-      )
-
-      vim.keymap.set("n", "<leader>/", function()
-        builtin.current_buffer_fuzzy_find(
-          require("telescope.themes").get_dropdown({
-            winblend = 10,
-            previewer = false,
-          })
-        )
-      end, { desc = "[/] Fuzzily search in current buffer" })
-
-      vim.keymap.set("n", "<leader>s/", function()
-        builtin.live_grep({
-          grep_open_files = true,
-          prompt_title = "Live Grep in Open Files",
-        })
-      end, { desc = "[S]earch [/] in Open Files" })
     end,
   },
 }

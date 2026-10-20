@@ -14,6 +14,9 @@ return {
   },
   {
     "neovim/nvim-lspconfig",
+    -- Nothing LSP-related is needed until a file is opened; this also defers
+    -- mason, fidget and blink.cmp (a dependency) off the startup path.
+    event = { "BufReadPre", "BufNewFile" },
     dependencies = {
       { "mason-org/mason.nvim", opts = {} },
       "mason-org/mason-lspconfig.nvim",
@@ -275,6 +278,9 @@ return {
       require("mason-lspconfig").setup({
         ensure_installed = {},
         automatic_installation = false,
+        -- nvim-java must run its setup before jdtls starts, so it enables
+        -- jdtls itself when a Java buffer loads (see nvim-java.lua).
+        automatic_enable = { exclude = { "jdtls" } },
       })
     end,
   },
