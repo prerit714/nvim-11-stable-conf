@@ -22,8 +22,10 @@ return {
             local filename = statusline.section_filename({ trunc_width = 140 })
             local fileinfo = statusline.section_fileinfo({ trunc_width = 120 })
             local search = statusline.section_searchcount({ trunc_width = 75 })
-            -- Always show the wall-clock time in UTC.
-            local clock = os.date("!%H:%M:%S") .. " UTC"
+            -- Always show the wall-clock time in IST (UTC+05:30, no DST),
+            -- regardless of the machine's local timezone.
+            local ist_offset = 5 * 3600 + 30 * 60
+            local clock = os.date("!%H:%M:%S", os.time() + ist_offset) .. " IST"
 
             return statusline.combine_groups({
               { hl = mode_hl, strings = { mode } },
@@ -44,7 +46,7 @@ return {
         },
       })
 
-      -- Redraw the statusline once per second so the UTC clock stays current.
+      -- Redraw the statusline once per second so the IST clock stays current.
       local timer = assert((vim.uv or vim.loop).new_timer())
       timer:start(
         1000,
