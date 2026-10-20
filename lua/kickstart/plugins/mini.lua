@@ -26,6 +26,11 @@ return {
             -- regardless of the machine's local timezone.
             local ist_offset = 5 * 3600 + 30 * 60
             local clock = os.date("!%H:%M:%S", os.time() + ist_offset) .. " IST"
+            -- Soonest running timebox; only read once the module is loaded
+            -- (i.e. a timer was started), so startup never pays for it.
+            local timebox = package.loaded["custom.timebox"]
+                and package.loaded["custom.timebox"].statusline()
+              or ""
 
             return statusline.combine_groups({
               { hl = mode_hl, strings = { mode } },
@@ -39,7 +44,7 @@ return {
               { hl = "MiniStatuslineFileinfo", strings = { fileinfo } },
               {
                 hl = mode_hl,
-                strings = { search, "%2l:%-2v", clock },
+                strings = { search, "%2l:%-2v", timebox, clock },
               },
             })
           end,

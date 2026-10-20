@@ -47,6 +47,7 @@ return {
         { "<leader>g", group = "[G]it" },
         { "<leader>h", group = "Git [H]unk", mode = { "n", "v" } },
         { "<leader>O", group = "[O]verseer" },
+        { "<leader>T", group = "[T]imebox" },
         { "<leader>b", group = "[B]uffer" },
         { "<leader>l", group = "[L]azygit" },
         { "s", group = "[S]urround (mini.surround)", mode = { "n", "x" } },
