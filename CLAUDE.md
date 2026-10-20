@@ -44,3 +44,12 @@ Four CLIs (`cursor-agent`, `opencode`, `claude`, `codex`) open in lazygit-style 
 3. `lua/custom/plugins/<tool>.lua` — a dependency-free local lazy spec that binds the key and lazy-loads the wrapper.
 
 **Gotcha:** lazy.nvim keys local plugins by `dir`, so specs sharing a `dir` get merged. Each launcher spec needs a distinct `dir`. That is why the empty `claude-lazy/` and `codex-lazy/` directories exist; cursor-agent uses the config root and opencode uses `lua/custom`. A new launcher should add its own `<tool>-lazy/init.lua` (returning `{}`) and point `dir` at it.
+
+### Git changes review
+
+`<leader>gc` (uncommitted vs `HEAD`, incl. untracked), `<leader>gC` (vs merge-base with the default branch) and `:GitChanges [ref]` open a Telescope picker of changed files with a unified-diff preview — meant for reviewing edits made by the AI TUIs. fff.nvim has no custom-source API, hence Telescope.
+
+- `lua/custom/git_changes/git.lua` — synchronous `vim.system` git helpers, always run with `cwd` = repo root (paths are root-relative).
+- `lua/custom/git_changes/picker.lua` — the picker: `<CR>` side-by-side diff, `<C-e>` edit file, `<C-s>` stage/unstage toggle.
+- `lua/custom/git_changes/view.lua` — a single reused diff tabpage: left is a read-only `gitchanges://<base>/<path>` scratch buffer, right is the real file (native diff mode, so `]c`/`[c`/`do`/`dp` work). Buffer-local `]f`/`[f` (next/prev file), `<leader>gc` (reopen picker), `q` (close tab); the maps are removed from real file buffers when the view moves on or closes.
+- `lua/custom/plugins/git-changes.lua` — local lazy spec (dir `git-changes-lazy/`, per the gotcha above) binding the keys and defining `:GitChanges`.
